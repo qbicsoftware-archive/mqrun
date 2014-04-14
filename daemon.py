@@ -153,7 +153,17 @@ def create_xml_from_yaml(outdir, param_file, raw_files):
 
 
 def run_maxquant(indir, outdir, param_file):
-    subprocess.call([str(mq_exec_path), str(param_file), "2"])
+    log.info("starting maxquant")
+    popen = subprocess.Popen(
+        [str(mq_exec_path), "-mqpar", str(param_file)],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+    )
+    log.info("maxquant stated with pid " + str(popen.pid))
+    popen.wait()
+    log.info("maxquant terminated with exit code " + str(popen.returncode))
+    log.debug("stdout of maxquant:\n" + popen.stdout.read().decode())
+    log.debug("stderr of maxquant:\n" + popen.stderr.read().decode())
 
 
 def main():
