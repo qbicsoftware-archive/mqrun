@@ -13,7 +13,7 @@ from maxquant.mqxml import make_xml_string
 log = None
 global_log = 'maxquant.log'
 
-mq_exec_path = '/usr/bin/echo'
+mq_exec_path = Path('c:/Users/adr/Desktop/MaxQuant/bin/MaxQuantCmd.exe')
 
 description = textwrap.dedent(
     """
@@ -153,7 +153,7 @@ def create_xml_from_yaml(outdir, param_file, raw_files):
 
 
 def run_maxquant(indir, outdir, param_file):
-    subprocess.call([mq_exec_path, str(param_file), "2"])
+    subprocess.call([str(mq_exec_path), str(param_file), "2"])
 
 
 def main():
