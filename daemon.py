@@ -155,7 +155,7 @@ def create_xml_from_yaml(outdir, param_file, raw_files):
 def run_maxquant(indir, outdir, param_file):
     log.info("starting maxquant")
     popen = subprocess.Popen(
-        [str(mq_exec_path), "-mqpar", str(param_file)],
+        [str(mq_exec_path), str(param_file), "2"],
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
     )
