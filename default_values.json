@@ -1,0 +1,185 @@
+{
+    "globalParams": {
+        "proteinFdr": 0.01,
+        "matchBetweenRunsFdr": false,
+        "razorProteinFdr": true,
+        "useCounterparts": false,
+        "compositionPrediction": false,
+        "decoyMode": "revert",
+        "equalIl": false,
+        "ionCountIntensities": false,
+        "topxWindow": 100,
+        "advancedRatios": false,
+        "matchUnidentifiedFeatures": false,
+        "minScoreModifiedPeptides": 40,
+        "ibaqLogFit": false,
+        "lfqRequireMsms": true,
+        "includeContamiants": true,
+        "minDeltaScoreModifiedPeptides": 17,
+        "specialAas": "KR",
+        "filterAacounts": true,
+        "crossLinkerSearch": false,
+        "deNovoSequencing": false,
+        "maxPeptideLengthForUnspecificSearch": 25,
+        "deNovoVarMods": true,
+        "reporterBasePeakRatio": 0,
+        "fullMaxMz": 1.7976931348623157e+308,
+        "minPeptides": 1,
+        "minTime": "NaN",
+        "reQuantify": true,
+        "calcPeakProperties": false,
+        "maxPeptideMass": 4600,
+        "reporterPif": 0.75,
+        "restrictMods": [],
+        "labileCrossLinker": "DSSO",
+        "minScoreUnmodifiedPeptides": 0,
+        "rtShift": false,
+        "matchBetweenRuns": false,
+        "ibaq": false,
+        "minPeakLen": 2,
+        "dependentPeptideMassBin": 0,
+        "minRatioCount": 2,
+        "fullMinMz": -1.7976931348623157e+308,
+        "useOriginalPrecursorMz": false,
+        "massDifferenceSearch": false,
+        "dependentPeptideFdr": 0,
+        "secondPeptide": true,
+        "maxTime": "NaN",
+        "siteFdr": 0.01,
+        "slicePeaks": true,
+        "quantMode": 1,
+        "minPepLen": 7,
+        "peptideFdr": 0.01,
+        "useDeltaScore": false,
+        "minDeltaScoreUnmodifiedPeptides": 0,
+        "matchingTimeWindow": 0,
+        "minPeptideLengthForUnspecificSearch": 8,
+        "RescoreMsx": false,
+        "dependentPeptides": false,
+        "fixedModifications": [
+            "Carbamidomethyl (C)"
+        ],
+        "restrictProteinQuantification": true,
+        "verboseColumnHeaders": false,
+        "minRazorPeptides": 1,
+        "reporterFraction": 0,
+        "multiModificationSearch": false,
+        "useNormRatiosForOccupancy": true,
+        "minUniquePeptides": 0,
+        "avalon": false,
+        "alignmentTimeWindow": 0,
+        "labileCrossLinkerSearch": false,
+        "separateLfq": false,
+        "lfqStabilizeLargeRatios": true,
+        "siteQuantMode": 0
+    },
+    "MSMSParams": {
+        "msmsParamsArray": [
+            {
+                "Name": "FTMS",
+                "DeNovoTolerance": {
+                    "value": 10,
+                    "unit": "Ppm"
+                },
+                "InPpm": true,
+                "Tolerance": {
+                    "value": 20,
+                    "unit": "Ppm"
+                },
+                "Deisotope": true,
+                "IncludeWater": true,
+                "Topx": 12,
+                "HigherCharges": true,
+                "IncludeAmmonia": true,
+                "DependentLosses": true
+            }
+        ],
+        "msmsCentroidMode": 1,
+        "numberOfCandidatesMultiplexedMsms": 25,
+        "msmsConnection": false,
+        "msmsRecalibration": false,
+        "numberOfCandidatesMsms": 15
+    },
+    "rawFiles": [
+        {
+            "fraction": 32767,
+            "experiment": "exp1",
+            "params": {
+                "isobaricLabels": [
+                    "str"
+                ],
+                "labelMods": [
+                    [
+                        "str"
+                    ]
+                ],
+                "maxCharge": 7,
+                "enzymesFirstSearch": [
+                    "str"
+                ],
+                "additionalVariableModificationProteins": [
+                    "str"
+                ],
+                "lfqAvEdgesPerNode": "6,",
+                "lfqMode": 0,
+                "enzymeMode": 0,
+                "variableModifications": [
+                    "Acetyl (Protein N-term)",
+                    "Oxidation (M)"
+                ],
+                "maxNmods": 5,
+                "multiplicity": 1,
+                "mainSearchTol": 4.5,
+                "useVariableModificationsFirstSearch": false,
+                "msInstrument": 0,
+                "enzymeModeFirstSearch": 0,
+                "lfqMinEdgesPerNode": 3,
+                "lfqMinRatioCount": 2,
+                "useNormRatiosForHybridLfq": true,
+                "lcmsRunType": 0,
+                "maxLabeledAa": 0,
+                "hasAdditionalVariableModifications": false,
+                "useEnzymeFirstSearch": false,
+                "variableModificationsFirstSearch": [
+                    [
+                        "str"
+                    ]
+                ],
+                "enzymes": [
+                    "Trypsin/P"
+                ],
+                "firstSearchTol": 20,
+                "fastLfq": true,
+                "doMassFiltering": true,
+                "maxMissedCleavages": 2,
+                "additionalVariableModifications": [
+                    "str"
+                ]
+            },
+            "path": "path",
+            "matching": 3,
+            "name": "fileName"
+        }
+    ],
+    "outputOptions": {
+        "tempFolder": "path",
+        "fixedCombinedFolder": "path"
+    },
+    "fastaFiles": [
+        {
+            "path": "path_to_fasta"
+        }
+    ],
+    "topLevelParams": {
+        "aifThresholdFdr": 0.01,
+        "aifSecondPass": true,
+        "aifSilWeight": 4,
+        "aifTopx": 20,
+        "aifIterative": true,
+        "aifCorrelation": 0.47,
+        "aifMinMass": 0,
+        "aifIsoWeight": 2,
+        "aifMsmsTol": 10,
+        "aifCorrelationFirstPass": 0.8
+    }
+}

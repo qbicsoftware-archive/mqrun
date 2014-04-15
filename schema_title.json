@@ -1,0 +1,1417 @@
+{
+    "id": "http://jsonschema.net#",
+    "properties": {
+        "globalParams": {
+            "id": "#globalParams",
+            "properties": {
+                "labileCrossLinker": {
+                    "id": "#labileCrossLinker",
+                    "minLength": 0,
+                    "description": "",
+                    "title": "labileCrossLinker",
+                    "required": false,
+                    "type": "string",
+                    "name": "ein name"
+                },
+                "minScoreUnmodifiedPeptides": {
+                    "id": "#minScoreUnmodifiedPeptides",
+                    "description": "",
+                    "title": "minScoreUnmodifiedPeptides",
+                    "required": false,
+                    "type": "integer",
+                    "minimum": 0,
+                    "name": ""
+                },
+                "multiModificationSearch": {
+                    "id": "#multiModificationSearch",
+                    "description": "",
+                    "title": "multiModificationSearch",
+                    "required": false,
+                    "type": "boolean",
+                    "name": ""
+                },
+                "proteinFdr": {
+                    "id": "#proteinFdr",
+                    "description": "",
+                    "title": "proteinFdr",
+                    "required": false,
+                    "type": "number",
+                    "minimum": 0,
+                    "name": ""
+                },
+                "ibaqLogFit": {
+                    "id": "#ibaqLogFit",
+                    "description": "",
+                    "title": "ibaqLogFit",
+                    "required": false,
+                    "type": "boolean",
+                    "name": ""
+                },
+                "useNormRatiosForOccupancy": {
+                    "id": "#useNormRatiosForOccupancy",
+                    "description": "",
+                    "title": "useNormRatiosForOccupancy",
+                    "required": false,
+                    "type": "boolean",
+                    "name": ""
+                },
+                "matchBetweenRunsFdr": {
+                    "id": "#matchBetweenRunsFdr",
+                    "description": "",
+                    "title": "matchBetweenRunsFdr",
+                    "required": false,
+                    "type": "boolean",
+                    "name": ""
+                },
+                "razorProteinFdr": {
+                    "id": "#razorProteinFdr",
+                    "description": "",
+                    "title": "razorProteinFdr",
+                    "required": false,
+                    "type": "boolean",
+                    "name": ""
+                },
+                "useCounterparts": {
+                    "id": "#useCounterparts",
+                    "description": "",
+                    "title": "useCounterparts",
+                    "required": false,
+                    "type": "boolean",
+                    "name": ""
+                },
+                "compositionPrediction": {
+                    "id": "#compositionPrediction",
+                    "description": "",
+                    "title": "compositionPrediction",
+                    "required": false,
+                    "type": "boolean",
+                    "name": ""
+                },
+                "dependentPeptideMassBin": {
+                    "id": "#dependentPeptideMassBin",
+                    "description": "",
+                    "title": "dependentPeptideMassBin",
+                    "required": false,
+                    "type": "integer",
+                    "minimum": 0,
+                    "name": ""
+                },
+                "decoyMode": {
+                    "id": "#decoyMode",
+                    "minLength": 0,
+                    "description": "",
+                    "title": "decoyMode",
+                    "required": false,
+                    "type": "string",
+                    "name": ""
+                },
+                "equalIl": {
+                    "id": "#equalIl",
+                    "description": "",
+                    "title": "equalIl",
+                    "required": false,
+                    "type": "boolean",
+                    "name": ""
+                },
+                "minRatioCount": {
+                    "id": "#minRatioCount",
+                    "description": "",
+                    "title": "minRatioCount",
+                    "required": false,
+                    "type": "integer",
+                    "minimum": 0,
+                    "name": ""
+                },
+                "ionCountIntensities": {
+                    "id": "#ionCountIntensities",
+                    "description": "",
+                    "title": "ionCountIntensities",
+                    "required": false,
+                    "type": "boolean",
+                    "name": ""
+                },
+                "siteQuantMode": {
+                    "id": "#siteQuantMode",
+                    "description": "",
+                    "title": "siteQuantMode",
+                    "required": false,
+                    "type": "integer",
+                    "minimum": 0,
+                    "name": ""
+                },
+                "useOriginalPrecursorMz": {
+                    "id": "#useOriginalPrecursorMz",
+                    "description": "",
+                    "title": "useOriginalPrecursorMz",
+                    "required": false,
+                    "type": "boolean",
+                    "name": ""
+                },
+                "massDifferenceSearch": {
+                    "id": "#massDifferenceSearch",
+                    "description": "",
+                    "title": "massDifferenceSearch",
+                    "required": false,
+                    "type": "boolean",
+                    "name": ""
+                },
+                "dependentPeptideFdr": {
+                    "id": "#dependentPeptideFdr",
+                    "description": "",
+                    "title": "dependentPeptideFdr",
+                    "required": false,
+                    "type": "integer",
+                    "minimum": 0,
+                    "name": ""
+                },
+                "advancedRatios": {
+                    "id": "#advancedRatios",
+                    "description": "",
+                    "title": "advancedRatios",
+                    "required": false,
+                    "type": "boolean",
+                    "name": ""
+                },
+                "secondPeptide": {
+                    "id": "#secondPeptide",
+                    "description": "",
+                    "title": "secondPeptide",
+                    "required": false,
+                    "type": "boolean",
+                    "name": ""
+                },
+                "rtShift": {
+                    "id": "#rtShift",
+                    "description": "",
+                    "title": "rtShift",
+                    "required": false,
+                    "type": "boolean",
+                    "name": ""
+                },
+                "matchBetweenRuns": {
+                    "id": "#matchBetweenRuns",
+                    "description": "",
+                    "title": "matchBetweenRuns",
+                    "required": false,
+                    "type": "boolean",
+                    "name": ""
+                },
+                "matchUnidentifiedFeatures": {
+                    "id": "#matchUnidentifiedFeatures",
+                    "description": "",
+                    "title": "matchUnidentifiedFeatures",
+                    "required": false,
+                    "type": "boolean",
+                    "name": ""
+                },
+                "fullMinMz": {
+                    "id": "#fullMinMz",
+                    "description": "",
+                    "title": "fullMinMz",
+                    "required": false,
+                    "type": "number",
+                    "name": ""
+                },
+                "maxTime": {
+                    "id": "#maxTime",
+                    "minLength": 0,
+                    "description": "",
+                    "title": "maxTime",
+                    "required": false,
+                    "type": "string",
+                    "name": ""
+                },
+                "reporterBasePeakRatio": {
+                    "id": "#reporterBasePeakRatio",
+                    "description": "",
+                    "title": "reporterBasePeakRatio",
+                    "required": false,
+                    "type": "integer",
+                    "minimum": 0,
+                    "name": ""
+                },
+                "separateLfq": {
+                    "id": "#separateLfq",
+                    "description": "",
+                    "title": "separateLfq",
+                    "required": false,
+                    "type": "boolean",
+                    "name": ""
+                },
+                "slicePeaks": {
+                    "id": "#slicePeaks",
+                    "description": "",
+                    "title": "slicePeaks",
+                    "required": false,
+                    "type": "boolean",
+                    "name": ""
+                },
+                "lfqRequireMsms": {
+                    "id": "#lfqRequireMsms",
+                    "description": "",
+                    "title": "lfqRequireMsms",
+                    "required": false,
+                    "type": "boolean",
+                    "name": ""
+                },
+                "quantMode": {
+                    "id": "#quantMode",
+                    "description": "",
+                    "title": "quantMode",
+                    "required": false,
+                    "type": "integer",
+                    "minimum": 0,
+                    "name": ""
+                },
+                "verboseColumnHeaders": {
+                    "id": "#verboseColumnHeaders",
+                    "description": "",
+                    "title": "verboseColumnHeaders",
+                    "required": false,
+                    "type": "boolean",
+                    "name": ""
+                },
+                "includeContamiants": {
+                    "id": "#includeContamiants",
+                    "description": "",
+                    "title": "includeContamiants",
+                    "required": false,
+                    "type": "boolean",
+                    "name": ""
+                },
+                "siteFdr": {
+                    "id": "#siteFdr",
+                    "description": "",
+                    "title": "siteFdr",
+                    "required": false,
+                    "type": "number",
+                    "minimum": 0,
+                    "name": ""
+                },
+                "minPepLen": {
+                    "id": "#minPepLen",
+                    "description": "",
+                    "title": "minPepLen",
+                    "required": false,
+                    "type": "integer",
+                    "minimum": 0,
+                    "name": ""
+                },
+                "minDeltaScoreModifiedPeptides": {
+                    "id": "#minDeltaScoreModifiedPeptides",
+                    "description": "",
+                    "title": "minDeltaScoreModifiedPeptides",
+                    "required": false,
+                    "type": "integer",
+                    "minimum": 0,
+                    "name": ""
+                },
+                "specialAas": {
+                    "id": "#specialAas",
+                    "minLength": 0,
+                    "description": "",
+                    "title": "specialAas",
+                    "required": false,
+                    "type": "string",
+                    "name": ""
+                },
+                "filterAacounts": {
+                    "id": "#filterAacounts",
+                    "description": "",
+                    "title": "filterAacounts",
+                    "required": false,
+                    "type": "boolean",
+                    "name": ""
+                },
+                "peptideFdr": {
+                    "id": "#peptideFdr",
+                    "description": "",
+                    "title": "peptideFdr",
+                    "required": false,
+                    "type": "number",
+                    "minimum": 0,
+                    "name": ""
+                },
+                "useDeltaScore": {
+                    "id": "#useDeltaScore",
+                    "description": "",
+                    "title": "useDeltaScore",
+                    "required": false,
+                    "type": "boolean",
+                    "name": ""
+                },
+                "crossLinkerSearch": {
+                    "id": "#crossLinkerSearch",
+                    "description": "",
+                    "title": "crossLinkerSearch",
+                    "required": false,
+                    "type": "boolean",
+                    "name": ""
+                },
+                "minDeltaScoreUnmodifiedPeptides": {
+                    "id": "#minDeltaScoreUnmodifiedPeptides",
+                    "description": "",
+                    "title": "minDeltaScoreUnmodifiedPeptides",
+                    "required": false,
+                    "type": "integer",
+                    "minimum": 0,
+                    "name": ""
+                },
+                "matchingTimeWindow": {
+                    "id": "#matchingTimeWindow",
+                    "description": "",
+                    "title": "matchingTimeWindow",
+                    "required": false,
+                    "type": "integer",
+                    "minimum": 0,
+                    "name": ""
+                },
+                "deNovoSequencing": {
+                    "id": "#deNovoSequencing",
+                    "description": "",
+                    "title": "deNovoSequencing",
+                    "required": false,
+                    "type": "boolean",
+                    "name": ""
+                },
+                "maxPeptideLengthForUnspecificSearch": {
+                    "id": "#maxPeptideLengthForUnspecificSearch",
+                    "description": "",
+                    "title": "maxPeptideLengthForUnspecificSearch",
+                    "required": false,
+                    "type": "integer",
+                    "minimum": 0,
+                    "name": ""
+                },
+                "deNovoVarMods": {
+                    "id": "#deNovoVarMods",
+                    "description": "",
+                    "title": "deNovoVarMods",
+                    "required": false,
+                    "type": "boolean",
+                    "name": ""
+                },
+                "dependentPeptides": {
+                    "id": "#dependentPeptides",
+                    "description": "",
+                    "title": "dependentPeptides",
+                    "required": false,
+                    "type": "boolean",
+                    "name": ""
+                },
+                "minPeakLen": {
+                    "id": "#minPeakLen",
+                    "description": "",
+                    "title": "minPeakLen",
+                    "required": false,
+                    "type": "integer",
+                    "minimum": 0,
+                    "name": ""
+                },
+                "restrictProteinQuantification": {
+                    "id": "#restrictProteinQuantification",
+                    "description": "",
+                    "title": "restrictProteinQuantification",
+                    "required": false,
+                    "type": "boolean",
+                    "name": ""
+                },
+                "minScoreModifiedPeptides": {
+                    "id": "#minScoreModifiedPeptides",
+                    "description": "",
+                    "title": "minScoreModifiedPeptides",
+                    "required": false,
+                    "type": "integer",
+                    "minimum": 0,
+                    "name": ""
+                },
+                "fullMaxMz": {
+                    "id": "#fullMaxMz",
+                    "description": "",
+                    "title": "fullMaxMz",
+                    "required": false,
+                    "type": "number",
+                    "name": ""
+                },
+                "RescoreMsx": {
+                    "id": "#RescoreMsx",
+                    "description": "",
+                    "title": "RescoreMsx",
+                    "required": false,
+                    "type": "boolean",
+                    "name": ""
+                },
+                "minRazorPeptides": {
+                    "id": "#minRazorPeptides",
+                    "description": "",
+                    "title": "minRazorPeptides",
+                    "required": false,
+                    "type": "integer",
+                    "minimum": 0,
+                    "name": ""
+                },
+                "topxWindow": {
+                    "id": "#topxWindow",
+                    "description": "",
+                    "title": "topxWindow",
+                    "required": false,
+                    "type": "integer",
+                    "minimum": 0,
+                    "name": ""
+                },
+                "minPeptideLengthForUnspecificSearch": {
+                    "id": "#minPeptideLengthForUnspecificSearch",
+                    "description": "",
+                    "title": "minPeptideLengthForUnspecificSearch",
+                    "required": false,
+                    "type": "integer",
+                    "minimum": 0,
+                    "name": ""
+                },
+                "minPeptides": {
+                    "id": "#minPeptides",
+                    "description": "",
+                    "title": "minPeptides",
+                    "required": false,
+                    "type": "integer",
+                    "minimum": 0,
+                    "name": ""
+                },
+                "reporterFraction": {
+                    "id": "#reporterFraction",
+                    "description": "",
+                    "title": "reporterFraction",
+                    "required": false,
+                    "type": "integer",
+                    "minimum": 0,
+                    "name": ""
+                },
+                "minTime": {
+                    "id": "#minTime",
+                    "minLength": 0,
+                    "description": "",
+                    "title": "minTime",
+                    "required": false,
+                    "type": "string",
+                    "name": ""
+                },
+                "ibaq": {
+                    "id": "#ibaq",
+                    "description": "",
+                    "title": "ibaq",
+                    "required": false,
+                    "type": "boolean",
+                    "name": ""
+                },
+                "minUniquePeptides": {
+                    "id": "#minUniquePeptides",
+                    "description": "",
+                    "title": "minUniquePeptides",
+                    "required": false,
+                    "type": "integer",
+                    "minimum": 0,
+                    "name": ""
+                },
+                "reQuantify": {
+                    "id": "#reQuantify",
+                    "description": "",
+                    "title": "reQuantify",
+                    "required": false,
+                    "type": "boolean",
+                    "name": ""
+                },
+                "calcPeakProperties": {
+                    "id": "#calcPeakProperties",
+                    "description": "",
+                    "title": "calcPeakProperties",
+                    "required": false,
+                    "type": "boolean",
+                    "name": ""
+                },
+                "avalon": {
+                    "id": "#avalon",
+                    "description": "",
+                    "title": "avalon",
+                    "required": false,
+                    "type": "boolean",
+                    "name": ""
+                },
+                "alignmentTimeWindow": {
+                    "id": "#alignmentTimeWindow",
+                    "description": "",
+                    "title": "alignmentTimeWindow",
+                    "required": false,
+                    "type": "integer",
+                    "minimum": 0,
+                    "name": ""
+                },
+                "labileCrossLinkerSearch": {
+                    "id": "#labileCrossLinkerSearch",
+                    "description": "",
+                    "title": "labileCrossLinkerSearch",
+                    "required": false,
+                    "type": "boolean",
+                    "name": ""
+                },
+                "maxPeptideMass": {
+                    "id": "#maxPeptideMass",
+                    "description": "",
+                    "title": "maxPeptideMass",
+                    "required": false,
+                    "type": "integer",
+                    "minimum": 0,
+                    "name": ""
+                },
+                "fixedModifications": {
+                    "uniqueItems": false,
+                    "id": "#fixedModifications",
+                    "minItems": 0,
+                    "items": {
+                        "id": "#0",
+                        "minLength": 0,
+                        "description": "",
+                        "title": "items",
+                        "required": false,
+                        "type": "string",
+                        "name": ""
+                    },
+                    "description": "",
+                    "title": "fixedModifications",
+                    "required": false,
+                    "type": "array",
+                    "name": ""
+                },
+                "reporterPif": {
+                    "id": "#reporterPif",
+                    "description": "",
+                    "title": "reporterPif",
+                    "required": false,
+                    "type": "number",
+                    "minimum": 0,
+                    "name": ""
+                },
+                "lfqStabilizeLargeRatios": {
+                    "id": "#lfqStabilizeLargeRatios",
+                    "description": "",
+                    "title": "lfqStabilizeLargeRatios",
+                    "required": false,
+                    "type": "boolean",
+                    "name": ""
+                },
+                "restrictMods": {
+                    "uniqueItems": false,
+                    "id": "#restrictMods",
+                    "minItems": 0,
+                    "items": {},
+                    "description": "",
+                    "title": "restrictMods",
+                    "required": false,
+                    "type": "array",
+                    "name": ""
+                }
+            },
+            "description": "global parameters for maxquant run",
+            "title": "globalParams",
+            "required": false,
+            "type": "object",
+            "name": ""
+        },
+        "MSMSParams": {
+            "id": "#MSMSParams",
+            "properties": {
+                "msmsParamsArray": {
+                    "uniqueItems": false,
+                    "id": "#msmsParamsArray",
+                    "minItems": 0,
+                    "items": {
+                        "id": "#0",
+                        "properties": {
+                            "IncludeAmmonia": {
+                                "id": "#IncludeAmmonia",
+                                "description": "",
+                                "title": "IncludeAmmonia",
+                                "required": false,
+                                "type": "boolean",
+                                "name": ""
+                            },
+                            "Deisotope": {
+                                "id": "#Deisotope",
+                                "description": "",
+                                "title": "Deisotope",
+                                "required": false,
+                                "type": "boolean",
+                                "name": ""
+                            },
+                            "Name": {
+                                "id": "#Name",
+                                "minLength": 0,
+                                "description": "",
+                                "title": "Name",
+                                "required": false,
+                                "type": "string",
+                                "name": ""
+                            },
+                            "DependentLosses": {
+                                "id": "#DependentLosses",
+                                "description": "",
+                                "title": "DependentLosses",
+                                "required": false,
+                                "type": "boolean",
+                                "name": ""
+                            },
+                            "DeNovoTolerance": {
+                                "id": "#DeNovoTolerance",
+                                "properties": {
+                                    "value": {
+                                        "id": "#value",
+                                        "description": "",
+                                        "title": "value",
+                                        "required": false,
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "name": ""
+                                    },
+                                    "unit": {
+                                        "id": "#unit",
+                                        "minLength": 0,
+                                        "description": "",
+                                        "title": "unit",
+                                        "required": false,
+                                        "type": "string",
+                                        "name": ""
+                                    }
+                                },
+                                "description": "",
+                                "title": "DeNovoTolerance",
+                                "required": false,
+                                "type": "object",
+                                "name": ""
+                            },
+                            "Topx": {
+                                "id": "#Topx",
+                                "description": "",
+                                "title": "Topx",
+                                "required": false,
+                                "type": "integer",
+                                "minimum": 0,
+                                "name": ""
+                            },
+                            "HigherCharges": {
+                                "id": "#HigherCharges",
+                                "description": "",
+                                "title": "HigherCharges",
+                                "required": false,
+                                "type": "boolean",
+                                "name": ""
+                            },
+                            "IncludeWater": {
+                                "id": "#IncludeWater",
+                                "description": "",
+                                "title": "IncludeWater",
+                                "required": false,
+                                "type": "boolean",
+                                "name": ""
+                            },
+                            "InPpm": {
+                                "id": "#InPpm",
+                                "description": "",
+                                "title": "InPpm",
+                                "required": false,
+                                "type": "boolean",
+                                "name": ""
+                            },
+                            "Tolerance": {
+                                "id": "#Tolerance",
+                                "properties": {
+                                    "value": {
+                                        "id": "#value",
+                                        "description": "",
+                                        "title": "value",
+                                        "required": false,
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "name": ""
+                                    },
+                                    "unit": {
+                                        "id": "#unit",
+                                        "minLength": 0,
+                                        "description": "",
+                                        "title": "unit",
+                                        "required": false,
+                                        "type": "string",
+                                        "name": ""
+                                    }
+                                },
+                                "description": "",
+                                "title": "Tolerance",
+                                "required": false,
+                                "type": "object",
+                                "name": ""
+                            }
+                        },
+                        "description": "",
+                        "title": "items",
+                        "required": false,
+                        "type": "object",
+                        "name": ""
+                    },
+                    "description": "",
+                    "title": "msmsParamsArray",
+                    "required": false,
+                    "type": "array",
+                    "name": "MSMS Array"
+                },
+                "msmsCentroidMode": {
+                    "id": "#msmsCentroidMode",
+                    "description": "",
+                    "title": "msmsCentroidMode",
+                    "required": false,
+                    "type": "integer",
+                    "minimum": 0,
+                    "name": ""
+                },
+                "numberOfCandidatesMultiplexedMsms": {
+                    "id": "#numberOfCandidatesMultiplexedMsms",
+                    "description": "",
+                    "title": "numberOfCandidatesMultiplexedMsms",
+                    "required": false,
+                    "type": "integer",
+                    "minimum": 0,
+                    "name": ""
+                },
+                "msmsConnection": {
+                    "id": "#msmsConnection",
+                    "description": "",
+                    "title": "msmsConnection",
+                    "required": false,
+                    "type": "boolean",
+                    "name": ""
+                },
+                "msmsRecalibration": {
+                    "id": "#msmsRecalibration",
+                    "description": "",
+                    "title": "msmsRecalibration",
+                    "required": false,
+                    "type": "boolean",
+                    "name": ""
+                },
+                "numberOfCandidatesMsms": {
+                    "id": "#numberOfCandidatesMsms",
+                    "description": "",
+                    "title": "numberOfCandidatesMsms",
+                    "required": false,
+                    "type": "integer",
+                    "minimum": 0,
+                    "name": ""
+                }
+            },
+            "description": "",
+            "title": "MSMSParams",
+            "required": false,
+            "type": "object",
+            "name": ""
+        },
+        "rawFiles": {
+            "uniqueItems": false,
+            "id": "#rawFiles",
+            "minItems": 0,
+            "items": {
+                "id": "#0",
+                "properties": {
+                    "fraction": {
+                        "id": "#fraction",
+                        "description": "",
+                        "title": "fraction",
+                        "required": false,
+                        "type": "integer",
+                        "minimum": 0,
+                        "name": ""
+                    },
+                    "experiment": {
+                        "id": "#experiment",
+                        "minLength": 0,
+                        "description": "",
+                        "title": "experiment",
+                        "required": false,
+                        "type": "string",
+                        "name": ""
+                    },
+                    "params": {
+                        "id": "#params",
+                        "properties": {
+                            "isobaricLabels": {
+                                "uniqueItems": false,
+                                "id": "#isobaricLabels",
+                                "minItems": 0,
+                                "items": {
+                                    "id": "#0",
+                                    "minLength": 0,
+                                    "description": "",
+                                    "title": "items",
+                                    "required": false,
+                                    "type": "string",
+                                    "name": ""
+                                },
+                                "description": "",
+                                "title": "isobaricLabels",
+                                "required": false,
+                                "type": "array",
+                                "name": ""
+                            },
+                            "labelMods": {
+                                "uniqueItems": false,
+                                "id": "#labelMods",
+                                "minItems": 0,
+                                "items": {
+                                    "uniqueItems": false,
+                                    "id": "#0",
+                                    "minItems": 0,
+                                    "items": {
+                                        "id": "#0",
+                                        "minLength": 0,
+                                        "description": "",
+                                        "title": "items",
+                                        "required": false,
+                                        "type": "string",
+                                        "name": ""
+                                    },
+                                    "description": "",
+                                    "title": "items",
+                                    "required": false,
+                                    "type": "array",
+                                    "name": ""
+                                },
+                                "description": "",
+                                "title": "labelMods",
+                                "required": false,
+                                "type": "array",
+                                "name": ""
+                            },
+                            "maxCharge": {
+                                "id": "#maxCharge",
+                                "description": "",
+                                "title": "maxCharge",
+                                "required": false,
+                                "type": "integer",
+                                "minimum": 0,
+                                "name": ""
+                            },
+                            "maxMissedCleavages": {
+                                "id": "#maxMissedCleavages",
+                                "description": "",
+                                "title": "maxMissedCleavages",
+                                "required": false,
+                                "type": "integer",
+                                "minimum": 0,
+                                "name": ""
+                            },
+                            "enzymesFirstSearch": {
+                                "uniqueItems": false,
+                                "id": "#enzymesFirstSearch",
+                                "minItems": 0,
+                                "items": {
+                                    "id": "#0",
+                                    "minLength": 0,
+                                    "description": "",
+                                    "title": "items",
+                                    "required": false,
+                                    "type": "string",
+                                    "name": ""
+                                },
+                                "description": "",
+                                "title": "enzymesFirstSearch",
+                                "required": false,
+                                "type": "array",
+                                "name": ""
+                            },
+                            "additionalVariableModificationProteins": {
+                                "uniqueItems": false,
+                                "id": "#additionalVariableModificationProteins",
+                                "minItems": 0,
+                                "items": {
+                                    "id": "#0",
+                                    "minLength": 0,
+                                    "description": "",
+                                    "title": "items",
+                                    "required": false,
+                                    "type": "string",
+                                    "name": ""
+                                },
+                                "description": "",
+                                "title": "additionalVariableModificationProteins",
+                                "required": false,
+                                "type": "array",
+                                "name": ""
+                            },
+                            "additionalVariableModifications": {
+                                "uniqueItems": false,
+                                "id": "#additionalVariableModifications",
+                                "minItems": 0,
+                                "items": {
+                                    "id": "#0",
+                                    "minLength": 0,
+                                    "description": "",
+                                    "title": "items",
+                                    "required": false,
+                                    "type": "string",
+                                    "name": ""
+                                },
+                                "description": "",
+                                "title": "additionalVariableModifications",
+                                "required": false,
+                                "type": "array",
+                                "name": ""
+                            },
+                            "lfqAvEdgesPerNode": {
+                                "id": "#lfqAvEdgesPerNode",
+                                "minLength": 0,
+                                "description": "",
+                                "title": "lfqAvEdgesPerNode",
+                                "required": false,
+                                "type": "string",
+                                "name": ""
+                            },
+                            "enzymeMode": {
+                                "id": "#enzymeMode",
+                                "description": "",
+                                "title": "enzymeMode",
+                                "required": false,
+                                "type": "integer",
+                                "minimum": 0,
+                                "name": ""
+                            },
+                            "variableModifications": {
+                                "uniqueItems": false,
+                                "id": "#variableModifications",
+                                "minItems": 0,
+                                "items": [
+                                    {
+                                        "id": "#0",
+                                        "minLength": 0,
+                                        "description": "",
+                                        "title": "",
+                                        "required": false,
+                                        "type": "string",
+                                        "name": ""
+                                    },
+                                    {
+                                        "id": "#1",
+                                        "minLength": 0,
+                                        "description": "",
+                                        "title": "",
+                                        "required": false,
+                                        "type": "string",
+                                        "name": ""
+                                    }
+                                ],
+                                "description": "",
+                                "title": "variableModifications",
+                                "required": false,
+                                "type": "array",
+                                "name": ""
+                            },
+                            "maxNmods": {
+                                "id": "#maxNmods",
+                                "description": "",
+                                "title": "maxNmods",
+                                "required": false,
+                                "type": "integer",
+                                "minimum": 0,
+                                "name": ""
+                            },
+                            "multiplicity": {
+                                "id": "#multiplicity",
+                                "description": "",
+                                "title": "multiplicity",
+                                "required": false,
+                                "type": "integer",
+                                "minimum": 0,
+                                "name": ""
+                            },
+                            "mainSearchTol": {
+                                "id": "#mainSearchTol",
+                                "description": "",
+                                "title": "mainSearchTol",
+                                "required": false,
+                                "type": "number",
+                                "minimum": 0,
+                                "name": ""
+                            },
+                            "useVariableModificationsFirstSearch": {
+                                "id": "#useVariableModificationsFirstSearch",
+                                "description": "",
+                                "title": "useVariableModificationsFirstSearch",
+                                "required": false,
+                                "type": "boolean",
+                                "name": ""
+                            },
+                            "msInstrument": {
+                                "id": "#msInstrument",
+                                "description": "",
+                                "title": "msInstrument",
+                                "required": false,
+                                "type": "integer",
+                                "minimum": 0,
+                                "name": ""
+                            },
+                            "enzymeModeFirstSearch": {
+                                "id": "#enzymeModeFirstSearch",
+                                "description": "",
+                                "title": "enzymeModeFirstSearch",
+                                "required": false,
+                                "type": "integer",
+                                "minimum": 0,
+                                "name": ""
+                            },
+                            "lfqMinEdgesPerNode": {
+                                "id": "#lfqMinEdgesPerNode",
+                                "description": "",
+                                "title": "lfqMinEdgesPerNode",
+                                "required": false,
+                                "type": "integer",
+                                "minimum": 0,
+                                "name": ""
+                            },
+                            "lfqMinRatioCount": {
+                                "id": "#lfqMinRatioCount",
+                                "description": "",
+                                "title": "lfqMinRatioCount",
+                                "required": false,
+                                "type": "integer",
+                                "minimum": 0,
+                                "name": ""
+                            },
+                            "useNormRatiosForHybridLfq": {
+                                "id": "#useNormRatiosForHybridLfq",
+                                "description": "",
+                                "title": "useNormRatiosForHybridLfq",
+                                "required": false,
+                                "type": "boolean",
+                                "name": ""
+                            },
+                            "lcmsRunType": {
+                                "id": "#lcmsRunType",
+                                "description": "",
+                                "title": "lcmsRunType",
+                                "required": false,
+                                "type": "integer",
+                                "minimum": 0,
+                                "name": ""
+                            },
+                            "maxLabeledAa": {
+                                "id": "#maxLabeledAa",
+                                "description": "",
+                                "title": "maxLabeledAa",
+                                "required": false,
+                                "type": "integer",
+                                "minimum": 0,
+                                "name": ""
+                            },
+                            "hasAdditionalVariableModifications": {
+                                "id": "#hasAdditionalVariableModifications",
+                                "description": "",
+                                "title": "hasAdditionalVariableModifications",
+                                "required": false,
+                                "type": "boolean",
+                                "name": ""
+                            },
+                            "useEnzymeFirstSearch": {
+                                "id": "#useEnzymeFirstSearch",
+                                "description": "",
+                                "title": "useEnzymeFirstSearch",
+                                "required": false,
+                                "type": "boolean",
+                                "name": ""
+                            },
+                            "variableModificationsFirstSearch": {
+                                "uniqueItems": false,
+                                "id": "#variableModificationsFirstSearch",
+                                "minItems": 0,
+                                "items": {
+                                    "uniqueItems": false,
+                                    "id": "#0",
+                                    "minItems": 0,
+                                    "items": {
+                                        "id": "#0",
+                                        "minLength": 0,
+                                        "description": "",
+                                        "title": "items",
+                                        "required": false,
+                                        "type": "string",
+                                        "name": ""
+                                    },
+                                    "description": "",
+                                    "title": "items",
+                                    "required": false,
+                                    "type": "array",
+                                    "name": ""
+                                },
+                                "description": "",
+                                "title": "variableModificationsFirstSearch",
+                                "required": false,
+                                "type": "array",
+                                "name": ""
+                            },
+                            "enzymes": {
+                                "uniqueItems": false,
+                                "id": "#enzymes",
+                                "minItems": 0,
+                                "items": {
+                                    "id": "#0",
+                                    "minLength": 0,
+                                    "description": "",
+                                    "title": "items",
+                                    "required": false,
+                                    "type": "string",
+                                    "name": ""
+                                },
+                                "description": "",
+                                "title": "enzymes",
+                                "required": false,
+                                "type": "array",
+                                "name": "Enzymes"
+                            },
+                            "firstSearchTol": {
+                                "id": "#firstSearchTol",
+                                "description": "",
+                                "title": "firstSearchTol",
+                                "required": false,
+                                "type": "integer",
+                                "minimum": 0,
+                                "name": ""
+                            },
+                            "doMassFiltering": {
+                                "id": "#doMassFiltering",
+                                "description": "",
+                                "title": "doMassFiltering",
+                                "required": false,
+                                "type": "boolean",
+                                "name": ""
+                            },
+                            "lfqMode": {
+                                "id": "#lfqMode",
+                                "description": "",
+                                "title": "lfqMode",
+                                "required": false,
+                                "type": "integer",
+                                "minimum": 0,
+                                "name": ""
+                            },
+                            "fastLfq": {
+                                "id": "#fastLfq",
+                                "description": "",
+                                "title": "fastLfq",
+                                "required": false,
+                                "type": "boolean",
+                                "name": ""
+                            }
+                        },
+                        "description": "",
+                        "title": "params",
+                        "required": false,
+                        "type": "object",
+                        "name": ""
+                    },
+                    "path": {
+                        "id": "#path",
+                        "minLength": 0,
+                        "description": "",
+                        "title": "path",
+                        "required": false,
+                        "type": "string",
+                        "name": ""
+                    },
+                    "matching": {
+                        "id": "#matching",
+                        "description": "",
+                        "title": "matching",
+                        "required": false,
+                        "type": "integer",
+                        "minimum": 0,
+                        "name": ""
+                    },
+                    "name": {
+                        "id": "#name",
+                        "minLength": 0,
+                        "description": "",
+                        "title": "name",
+                        "required": false,
+                        "type": "string",
+                        "name": ""
+                    }
+                },
+                "description": "",
+                "title": "items",
+                "required": false,
+                "type": "object",
+                "name": ""
+            },
+            "description": "",
+            "title": "rawFiles",
+            "required": false,
+            "type": "array",
+            "name": ""
+        },
+        "outputOptions": {
+            "id": "#outputOptions",
+            "properties": {
+                "tempFolder": {
+                    "id": "#tempFolder",
+                    "minLength": 0,
+                    "description": "",
+                    "title": "tempFolder",
+                    "required": false,
+                    "type": "string",
+                    "name": ""
+                },
+                "fixedCombinedFolder": {
+                    "id": "#fixedCombinedFolder",
+                    "minLength": 0,
+                    "description": "",
+                    "title": "fixedCombinedFolder",
+                    "required": false,
+                    "type": "string",
+                    "name": ""
+                }
+            },
+            "description": "",
+            "title": "outputOptions",
+            "required": false,
+            "type": "object",
+            "name": ""
+        },
+        "fastaFiles": {
+            "uniqueItems": false,
+            "id": "#fastaFiles",
+            "minItems": 0,
+            "items": {
+                "id": "#0",
+                "properties": {
+                    "path": {
+                        "id": "#path",
+                        "minLength": 0,
+                        "description": "",
+                        "title": "path",
+                        "required": false,
+                        "type": "string",
+                        "name": ""
+                    }
+                },
+                "description": "",
+                "title": "items",
+                "required": false,
+                "type": "object",
+                "name": ""
+            },
+            "description": "",
+            "title": "fastaFiles",
+            "required": false,
+            "type": "array",
+            "name": "fasta files"
+        },
+        "topLevelParams": {
+            "id": "#topLevelParams",
+            "properties": {
+                "aifThresholdFdr": {
+                    "id": "#aifThresholdFdr",
+                    "description": "",
+                    "title": "aifThresholdFdr",
+                    "required": false,
+                    "type": "number",
+                    "minimum": 0,
+                    "name": ""
+                },
+                "aifCorrelationFirstPass": {
+                    "id": "#aifCorrelationFirstPass",
+                    "description": "",
+                    "title": "aifCorrelationFirstPass",
+                    "required": false,
+                    "type": "number",
+                    "minimum": 0,
+                    "name": ""
+                },
+                "aifSecondPass": {
+                    "id": "#aifSecondPass",
+                    "description": "",
+                    "title": "aifSecondPass",
+                    "required": false,
+                    "type": "boolean",
+                    "name": ""
+                },
+                "aifSilWeight": {
+                    "id": "#aifSilWeight",
+                    "description": "",
+                    "title": "aifSilWeight",
+                    "required": false,
+                    "type": "integer",
+                    "minimum": 0,
+                    "name": ""
+                },
+                "aifTopx": {
+                    "id": "#aifTopx",
+                    "description": "",
+                    "title": "aifTopx",
+                    "required": false,
+                    "type": "integer",
+                    "minimum": 0,
+                    "name": ""
+                },
+                "aifMinMass": {
+                    "id": "#aifMinMass",
+                    "description": "",
+                    "title": "aifMinMass",
+                    "required": false,
+                    "type": "integer",
+                    "minimum": 0,
+                    "name": ""
+                },
+                "aifIterative": {
+                    "id": "#aifIterative",
+                    "description": "",
+                    "title": "aifIterative",
+                    "required": false,
+                    "type": "boolean",
+                    "name": ""
+                },
+                "aifIsoWeight": {
+                    "id": "#aifIsoWeight",
+                    "description": "",
+                    "title": "aifIsoWeight",
+                    "required": false,
+                    "type": "integer",
+                    "minimum": 0,
+                    "name": ""
+                },
+                "aifMsmsTol": {
+                    "id": "#aifMsmsTol",
+                    "description": "",
+                    "title": "aifMsmsTol",
+                    "required": false,
+                    "type": "integer",
+                    "minimum": 0,
+                    "name": ""
+                },
+                "aifCorrelation": {
+                    "id": "#aifCorrelation",
+                    "description": "",
+                    "title": "aifCorrelation",
+                    "required": false,
+                    "type": "number",
+                    "minimum": 0,
+                    "name": ""
+                }
+            },
+            "description": "",
+            "title": "topLevelParams",
+            "required": false,
+            "type": "object",
+            "name": ""
+        }
+    },
+    "required": true,
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "title": "MaxQuant Parameters",
+    "description": "",
+    "type": "object",
+    "name": "mqparams"
+}
