@@ -17,6 +17,17 @@ with open('./schema_title.json') as f:
     _schema = json.load(f)
 
 
+with open('./default_values.json') as f:
+    _vals = json.load(f)
+    _defaults = {}
+    _defaults['default'] = {}
+    _defaults.setdefault('globalParams', {})['default'] = _vals['globalParams']
+    _defaults.setdefault('MSMSParams', {})['default'] = _vals['MSMSParams']
+    _defaults.setdefault('rawFileParams', {})['default'] = (
+        _vals['rawFiles'][0]['params']
+    )
+
+
 def encode(value):
     if isinstance(value, bool):
         return str(value).lower()
@@ -54,7 +65,6 @@ def rec_update(d, u):
             d[k] = r
         else:
             d[k] = u[k]
-    return d
 
 
 def data_to_xml(user_data, default_data, file_paths, output_dir, tmp_dir):
@@ -63,16 +73,18 @@ def data_to_xml(user_data, default_data, file_paths, output_dir, tmp_dir):
     root = ElementTree.Element('MaxQuantParams')
     tree = ElementTree.ElementTree(root)
 
-    for klass, key in [(MSMSParams, 'msmsParams'),
+    for klass, key in [(MSMSParams, 'MSMSParams'),
                        (GlobalParams, 'globalParams'),
                        (RawFileParams, 'rawFiles')]:
-        writer = klass(default_data)
-        writer.update_data(user_data, extra_data)
-        writer.add_to_xml(root)
+        writer = klass()
+        writer.update_data(default_data[key])
+        writer.update_data(user_data[key], extra_data)
+        writer.write_into_xml(tree)
 
     xml_file = BytesIO()
     tree.write(xml_file, 'utf-8')
-    return xml_file.getvalue().decode()
+    s = xml_file.getvalue().decode()
+    return tree
 
 
 def xml_to_data(xml_tree):
@@ -110,43 +122,56 @@ class MQParamSet(object):
     def extra_data(self):
         return self._extra_data
 
-    def __init__(self, schema):
+    def __init__(self, schema, defaults={}):
         self._schema = schema
         self._data = None
         self._extra_data = ExtraMQData(None, None, None)
+        self._defaults = defaults
 
     def update_data(self, user_data=None, extra_data=None):
         if extra_data is not None:
+            old = list(self._extra_data)
             for i, dat in enumerate(extra_data):
                 if dat is not None:
-                    self._extra_data[i] = dat
+                    old[i] = dat
+            self._extra_data = ExtraMQData(*old)
 
         if user_data is not None:
+            if 'defaults' in user_data:
+                self._data = deepcopy(self._defaults[user_data['defaults']])
+            else:
+                assert self._schema["type"] == 'object'
+                self._data = {}
             rec_update(self._data, user_data)
 
     def from_xml(self, xml_tree, ignore=[]):
         if not self._schema["type"] == "object":
             raise ValueError("type {} not supported"
                              .format(self._schema["type"]))
-
-        base = xml_tree.find("MaxQuantParam")
-        self._simple_read_from_xml(base, self._schema['properties'],
-                                   ignore=ignore)
+        base = xml_tree.getroot()
+        data = self._simple_read_from_xml(base, self._schema, ignore=ignore)
+        self.update_data(data)
 
     def write_into_xml(self, xml_tree, ignore=[]):
         if not self._schema["type"] == "object":
             raise ValueError("type {} not supported"
                              .format(self._schema["type"]))
 
-        base = xml_tree.find("MaxQuantParam")
+        base = xml_tree.getroot()
         self._simple_write_into_xml(base, self.data,
-                                    self._schema['properties'], ignore=ignore)
+                                    self._schema, ignore=ignore)
 
     def _simple_read_from_xml(self, base_element, schema, ignore=[]):
         ignore = set(ignore)
+        ignore.add('#defaults')
+        if schema['type'] != 'object':
+            raise ValueError("expected schema to contain an object")
+        schema = schema['properties']
 
         data = {}
-        for key in schema["properties"]:
+        for key in schema:
+            if key == 'defaults':
+                continue
             if schema[key]["id"] in ignore:
                 continue
 
@@ -169,13 +194,20 @@ class MQParamSet(object):
             else:
                 data[key] = decode(el.text, type_)
 
-        self.update_data(data)
+        return data
 
     def _simple_write_into_xml(self, base_element, data, schema, ignore=[]):
         ignore = set(ignore)
+        if schema['type'] != 'object':
+            raise ValueError("expected schema to contain an object")
+        schema = schema['properties']
 
         for key, value in data.items():
-            if key in ignore or key not in schema:
+            if key == 'defaults':
+                continue
+            if key not in schema:
+                raise ValueError("Unknown key: {}".format(key))
+            if schema[key]['id'] in ignore:
                 continue
 
             data_el = ElementTree.Element(key)
@@ -204,15 +236,22 @@ class MQParamSet(object):
 class RawFileParams(MQParamSet):
 
     def __init__(self):
-        super().__init__(_schema['properties']['rawFiles'])
+        super().__init__(
+            _schema['properties']['rawFiles'],
+            _defaults['rawFileParams']
+        )
 
     def update_data(self, user_data=None, extra_data=None):
         if user_data is not None:
             data = []
             for user_item in user_data:
-                default = deepcopy(self._data[0])
-                rec_update(default, user_item)
-                data.append(default)
+                if 'defaults' in user_item['params']:
+                    default = deepcopy(
+                        self._defaults[user_item['params']['defaults']]
+                    )
+                    rec_update(default, user_item['params'])
+                    user_item['params'] = default
+                data.append(user_item)
 
             self._data = data
 
@@ -252,13 +291,14 @@ class RawFileParams(MQParamSet):
             index = int(param_group.text.strip())
             params_xml = param_groups[index]
             files[i]['params'] = self._simple_read_from_xml(
-                params_xml, params_schema['properties']
+                params_xml, params_schema
             )
 
         self.update_data(files)
 
-    def add_to_xml(self, xml_root):
+    def write_into_xml(self, xml_tree):
         assert isinstance(self._data, list)
+        xml_root = xml_tree.getroot()
 
         experiments = ElementTree.Element('experiments')
         file_paths = ElementTree.Element('filePaths')
@@ -276,10 +316,12 @@ class RawFileParams(MQParamSet):
             experiments.append(experiment)
 
             file_path = ElementTree.Element('string')
-            if file_data['name'] not in self._file_paths:
-                file_path.text = encode(file_data['path'])
+            if file_data['name'] in self.extra_data.file_paths:
+                file_path.text = encode(
+                    self.extra_data.file_paths[file_data['name']]
+                )
             else:
-                file_path.text = encode(self._file_paths[file_data['name']])
+                file_path.text = encode(file_data['path'])
             file_paths.append(file_path)
 
             fraction = ElementTree.Element('short')
@@ -305,7 +347,10 @@ class RawFileParams(MQParamSet):
 class MSMSParams(MQParamSet):
 
     def __init__(self):
-        super().__init__(_schema['properties']['MSMSParams'])
+        super().__init__(
+            _schema['properties']['MSMSParams'],
+            _defaults['MSMSParams']
+        )
 
     def from_xml(self, xml_tree):
         ignore = {'#msmsParamsArray'}
@@ -331,9 +376,9 @@ class MSMSParams(MQParamSet):
             msms_data.append(data)
         self._data[key] = msms_data
 
-    def add_to_xml(self, xml_tree):
+    def write_into_xml(self, xml_tree):
         ignore = {'#msmsParamsArray'}
-        super().add_to_xml(xml_tree, ignore)
+        super().write_into_xml(xml_tree, ignore)
 
         key = 'msmsParamsArray'
         val = self._data[key]
@@ -365,4 +410,7 @@ class MSMSParams(MQParamSet):
 class GlobalParams(MQParamSet):
 
     def __init__(self):
-        super().__init__(_schema['properties']['globalParams'])
+        super().__init__(
+            _schema['properties']['globalParams'],
+            _defaults['globalParams']
+        )

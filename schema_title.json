@@ -4,6 +4,9 @@
         "globalParams": {
             "id": "#globalParams",
             "properties": {
+                "defaults": {
+                    "id": "#globalParamsDefaults"
+                },
                 "labileCrossLinker": {
                     "id": "#labileCrossLinker",
                     "minLength": 0,
@@ -92,7 +95,7 @@
                     "description": "",
                     "title": "dependentPeptideMassBin",
                     "required": false,
-                    "type": "integer",
+                    "type": "number",
                     "minimum": 0,
                     "name": ""
                 },
@@ -160,7 +163,7 @@
                     "description": "",
                     "title": "dependentPeptideFdr",
                     "required": false,
-                    "type": "integer",
+                    "type": "number",
                     "minimum": 0,
                     "name": ""
                 },
@@ -602,7 +605,7 @@
                     "uniqueItems": false,
                     "id": "#restrictMods",
                     "minItems": 0,
-                    "items": {},
+                    "items": {"type": "string"},
                     "description": "",
                     "title": "restrictMods",
                     "required": false,
@@ -619,6 +622,9 @@
         "MSMSParams": {
             "id": "#MSMSParams",
             "properties": {
+                "defaults": {
+                    "id": "#MSMSParamsDefaults"
+                },
                 "msmsParamsArray": {
                     "uniqueItems": false,
                     "id": "#msmsParamsArray",
@@ -839,6 +845,9 @@
                     "params": {
                         "id": "#params",
                         "properties": {
+                            "defaults": {
+                                "id": "#rawFileDefaults"
+                            },
                             "isobaricLabels": {
                                 "uniqueItems": false,
                                 "id": "#isobaricLabels",
@@ -984,8 +993,7 @@
                                 "uniqueItems": false,
                                 "id": "#variableModifications",
                                 "minItems": 0,
-                                "items": [
-                                    {
+                                "items": {
                                         "id": "#0",
                                         "minLength": 0,
                                         "description": "",
@@ -993,17 +1001,7 @@
                                         "required": false,
                                         "type": "string",
                                         "name": ""
-                                    },
-                                    {
-                                        "id": "#1",
-                                        "minLength": 0,
-                                        "description": "",
-                                        "title": "",
-                                        "required": false,
-                                        "type": "string",
-                                        "name": ""
-                                    }
-                                ],
+                                },
                                 "description": "",
                                 "title": "variableModifications",
                                 "required": false,
