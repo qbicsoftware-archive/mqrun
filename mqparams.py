@@ -1,5 +1,5 @@
 import json
-from copy import copy, deepcopy
+from copy import deepcopy
 import collections
 from xml.etree import ElementTree
 from pathlib import PureWindowsPath
@@ -8,6 +8,9 @@ try:
     from io import BytesIO
 except ImportError:
     from StringIO import StringIO as BytesIO
+
+
+__all__ = ['xml_to_data', 'data_to_xml']
 
 
 with open('./schema_title.json') as f:
@@ -22,19 +25,15 @@ def encode(value):
 
 
 def decode(string, dtype):
-    if not string:
-        if dtype == "string":
-            return ""
-        else:
-            raise ValueError("invalid value {} for type {}".format(
-                string, dtype))
+    if string is None:
+        return None
     if dtype == "number":
         return float(string.strip())
-    if dtype == "string":
+    elif dtype == "string":
         return string.strip()
-    if dtype == "integer":
+    elif dtype == "integer":
         return int(string.strip())
-    if dtype == "boolean":
+    elif dtype == "boolean":
         s = string.strip()
         if s == "true":
             return True
@@ -59,61 +58,170 @@ def rec_update(d, u):
 
 
 def data_to_xml(user_data, default_data, file_paths, output_dir, tmp_dir):
+    extra_data = ExtraMQData(file_paths, output_dir, tmp_dir)
+
     root = ElementTree.Element('MaxQuantParams')
     tree = ElementTree.ElementTree(root)
 
-    for klass in [MSMSParams, GlobalParams]:
+    for klass, key in [(MSMSParams, 'msmsParams'),
+                       (GlobalParams, 'globalParams'),
+                       (RawFileParams, 'rawFiles')]:
         writer = klass(default_data)
-        writer.update_data(user_data)
+        writer.update_data(user_data, extra_data)
         writer.add_to_xml(root)
-
-    writer = RawFileParams(default_data, file_paths)
-    writer.update_data(user_data)
-    writer.add_to_xml(root)
 
     xml_file = BytesIO()
     tree.write(xml_file, 'utf-8')
     return xml_file.getvalue().decode()
 
 
-def xml_to_data(xml_tree, default_data):
+def xml_to_data(xml_tree):
     data = {}
 
-    global_params = GlobalParams(default_data)
+    global_params = GlobalParams()
     global_params.from_xml(xml_tree)
-    raw_file_params = RawFileParams(default_data, None)
+    raw_file_params = RawFileParams()
     raw_file_params.from_xml(xml_tree)
-    msms_params = MSMSParams(default_data)
+    msms_params = MSMSParams()
     msms_params.from_xml(xml_tree)
 
-    data['globalParams'] = global_params._data
-    data['rawFiles'] = raw_file_params._data
-    data['MSMSParams'] = msms_params._data
+    data['globalParams'] = global_params.data
+    data['rawFiles'] = raw_file_params.data
+    data['MSMSParams'] = msms_params.data
 
-    return data
+    extra_data = raw_file_params.extra_data
+
+    return data, extra_data
 
 
-class RawFileParams:
+ExtraMQData = collections.namedtuple(
+    'ExtraMQData',
+    ['file_paths', 'output_dir', 'tmp_dir']
+)
 
-    def __init__(self, default_data, file_paths):
-        self._file_paths = file_paths
-        self._data = copy(default_data['rawFiles'])
-        self._schema = _schema['properties']['rawFiles']
 
-    def update_data(self, user_data):
-        data = []
-        for user_item in user_data['rawFiles']:
-            default = deepcopy(self._data[0])
-            rec_update(default, user_item)
-            data.append(default)
+class MQParamSet(object):
 
-        self._data = data
+    @property
+    def data(self):
+        return self._data
+
+    @property
+    def extra_data(self):
+        return self._extra_data
+
+    def __init__(self, schema):
+        self._schema = schema
+        self._data = None
+        self._extra_data = ExtraMQData(None, None, None)
+
+    def update_data(self, user_data=None, extra_data=None):
+        if extra_data is not None:
+            for i, dat in enumerate(extra_data):
+                if dat is not None:
+                    self._extra_data[i] = dat
+
+        if user_data is not None:
+            rec_update(self._data, user_data)
+
+    def from_xml(self, xml_tree, ignore=[]):
+        if not self._schema["type"] == "object":
+            raise ValueError("type {} not supported"
+                             .format(self._schema["type"]))
+
+        base = xml_tree.find("MaxQuantParam")
+        self._simple_read_from_xml(base, self._schema['properties'],
+                                   ignore=ignore)
+
+    def write_into_xml(self, xml_tree, ignore=[]):
+        if not self._schema["type"] == "object":
+            raise ValueError("type {} not supported"
+                             .format(self._schema["type"]))
+
+        base = xml_tree.find("MaxQuantParam")
+        self._simple_write_into_xml(base, self.data,
+                                    self._schema['properties'], ignore=ignore)
+
+    def _simple_read_from_xml(self, base_element, schema, ignore=[]):
+        ignore = set(ignore)
+
+        data = {}
+        for key in schema["properties"]:
+            if schema[key]["id"] in ignore:
+                continue
+
+            el = base_element.find(key)
+            type_ = schema[key]["type"]
+            if type_ == "array":
+                item_type = schema[key]["items"]["type"]
+                if item_type == "string":
+                    strings = [s.text.strip() for s in el]
+                    data[key] = strings
+                elif item_type == "array":
+                    if not schema[key]["items"]["items"]["type"] == "string":
+                        raise ValueError("can not decode element " + key)
+
+                    strings = [s.text.split(';') for s in el]
+                    data[key] = strings
+                else:
+                    raise ValueError("only list of list of string and " +
+                                     "list of string are supported")
+            else:
+                data[key] = decode(el.text, type_)
+
+        self.update_data(data)
+
+    def _simple_write_into_xml(self, base_element, data, schema, ignore=[]):
+        ignore = set(ignore)
+
+        for key, value in data.items():
+            if key in ignore or key not in schema:
+                continue
+
+            data_el = ElementTree.Element(key)
+            base_element.append(data_el)
+
+            if schema[key]["type"] == "array":
+                assert isinstance(value, collections.Sequence)
+                if schema[key]["items"]["type"] == "array":
+                    for value_list in value:
+                        assert isinstance(value_list, collections.Sequence)
+                        str_el = ElementTree.Element("string")
+                        str_el.text = ';'.join(encode(v) for v in value_list)
+                        data_el.append(str_el)
+                elif schema[key]["items"]["type"] == "string":
+                    for val in value:
+                        str_el = ElementTree.Element("string")
+                        str_el.text = encode(val)
+                        data_el.append(str_el)
+                else:
+                    raise ValueError("list of {} not supported"
+                                     .format(schema[key]["items"]["type"]))
+            else:
+                data_el.text = encode(value)
+
+
+class RawFileParams(MQParamSet):
+
+    def __init__(self):
+        super().__init__(_schema['properties']['rawFiles'])
+
+    def update_data(self, user_data=None, extra_data=None):
+        if user_data is not None:
+            data = []
+            for user_item in user_data:
+                default = deepcopy(self._data[0])
+                rec_update(default, user_item)
+                data.append(default)
+
+            self._data = data
+
+        super().update_data(extra_data=extra_data)
 
     def from_xml(self, xml_tree):
         root = xml_tree.getroot()
 
         files = []
-        self._data = files
 
         experiments = root.find('experiments')
         file_paths = root.find('filePaths')
@@ -139,37 +247,15 @@ class RawFileParams:
 
             files.append(file)
 
+        params_schema = self._schema['items']['properties']['params']
         for i, param_group in enumerate(param_group_inds):
             index = int(param_group.text.strip())
             params_xml = param_groups[index]
-            files[i]['params'] = self._group_params_from_xml(params_xml)
+            files[i]['params'] = self._simple_read_from_xml(
+                params_xml, params_schema['properties']
+            )
 
-    def _group_params_from_xml(self, elem):
-        params = {}
-        schema = self._schema['items']['properties']['params']['properties']
-
-        for key in schema:
-            if key in ['enzymes', 'variableModifications',
-                       'enzymesFirstSearch']:
-                items = []
-                for string in elem.find(key):
-                    items.append(string.text.strip())
-                params[key] = items
-            elif key in ['variableModificationsFirstSearch', 'labelMods']:
-                items = []
-                for string in elem.find(key):
-                    items.append(string.text.strip().split(';'))
-                params[key] = items
-            elif key == 'additionalVariableModificationProteins':
-                pass  # TODO
-            elif key == 'additionalVariableModifications':
-                pass  # TODO
-            elif key == 'isobaricLabels':
-                pass  # TODO
-            else:
-                params[key] = decode(elem.find(key).text, schema[key]["type"])
-
-        return params
+        self.update_data(files)
 
     def add_to_xml(self, xml_root):
         assert isinstance(self._data, list)
@@ -209,167 +295,74 @@ class RawFileParams:
             param_group_inds.append(param_group_ind)
 
             param_group = ElementTree.Element('parameterGroup')
-            self._add_group_params_to_xml(param_group, file_data['params'])
+            params_schema = self._schema['items']['properties']['params']
+            self._simple_write_into_xml(
+                param_group, file_data['params'], params_schema
+            )
             param_groups.append(param_group)
 
-    def _add_group_params_to_xml(self, base, params):
-        assert isinstance(params, collections.Mapping)
-        for key, value in params.items():
-            if key in ['enzymes', 'variableModifications',
-                       'enzymesFirstSearch']:
-                assert isinstance(value, list)
-                elem = ElementTree.Element(key)
-                base.append(elem)
-                for item in value:
-                    assert isinstance(item, str)
-                    string_el = ElementTree.Element('string')
-                    string_el.text = encode(item)
-                    elem.append(string_el)
-            elif key in ['variableModificationsFirstSearch', 'labelMods']:
-                assert isinstance(value, list)
-                elem = ElementTree.Element(key)
-                base.append(elem)
-                for item in value:
-                    assert isinstance(item, list)
-                    string_el = ElementTree.Element('string')
-                    string_el.text = encode(';'.join(item))
-                    elem.append(string_el)
-            elif key == 'additionalVariableModificationProteins':
-                pass  # TODO
-            elif key == 'additionalVariableModifications':
-                pass  # TODO
-            elif key == 'isobaricLabels':
-                pass  # TODO
-            else:
-                elem = ElementTree.Element(key)
-                elem.text = encode(value)
-                base.append(elem)
 
+class MSMSParams(MQParamSet):
 
-class MSMSParams:
-
-    def __init__(self, default_data):
-        self._keys = _schema['properties']['MSMSParams']['properties'].keys()
-        self._schema = _schema['properties']['MSMSParams']['properties']
-        self._data = copy(default_data['MSMSParams'])
-
-    def update_data(self, user_data):
-        if 'MSMSParams' in user_data:
-            rec_update(self._data, user_data['MSMSParams'])
+    def __init__(self):
+        super().__init__(_schema['properties']['MSMSParams'])
 
     def from_xml(self, xml_tree):
-        self._data = {}
-        for key in self._schema:
-            if key == 'msmsParamsArray':
-                msms_data = []
-                array_root = xml_tree.find(key)
-                schema = self._schema['msmsParamsArray']['items']['properties']
-                for param_set in array_root:
-                    data = {}
-                    for name in schema:
-                        if name in ['Tolerance', 'DeNovoTolerance']:
-                            elem = param_set.find(name)
-                            data[name] = {}
-                            value_elem = elem.find("Value")
-                            data[name]['value'] = decode(value_elem.text, "string")
-                            unit_elem = elem.find("Unit")
-                            data[name]['unit'] = decode(unit_elem.text, "string")
-                        else:
-                            data[name] = param_set.attrib[name]
-                    msms_data.append(data)
-                self._data[key] = msms_data
-            else:
-                elem = xml_tree.find(key)
-                try:
-                    self._data[key] = decode(elem.text, self._schema[key]['type'])
-                except ValueError:
-                    raise ValueError("Could not decode element " + key)
+        ignore = {'#msmsParamsArray'}
+        super().from_xml(xml_tree, ignore)
 
-    def add_to_xml(self, xml_root):
-        for key, val in self._data.items():
-            if key not in self._keys:
-                raise ValueError('Invalid data item: ' + key)
+        key = 'msmsParamsArray'
+        array_schema = self._schema['properties']['msmsParamsArray']
+        msms_data = []
+        array_root = xml_tree.find(key)
+        schema = array_schema['items']['properties']
+        for param_set in array_root:
+            data = {}
+            for name in schema:
+                if name in ['Tolerance', 'DeNovoTolerance']:
+                    elem = param_set.find(name)
+                    data[name] = {}
+                    value_elem = elem.find("Value")
+                    data[name]['value'] = decode(value_elem.text, "string")
+                    unit_elem = elem.find("Unit")
+                    data[name]['unit'] = decode(unit_elem.text, "string")
+                else:
+                    data[name] = param_set.attrib[name]
+            msms_data.append(data)
+        self._data[key] = msms_data
 
-            base = ElementTree.Element(key)
-            xml_root.append(base)
+    def add_to_xml(self, xml_tree):
+        ignore = {'#msmsParamsArray'}
+        super().add_to_xml(xml_tree, ignore)
 
-            if key == 'msmsParamsArray':
+        key = 'msmsParamsArray'
+        val = self._data[key]
+        base = ElementTree.Element(key)
+        xml_tree.getroot().append(base)
 
-                assert isinstance(val, list)
-                for param_set in val:
-                    param_set_el = ElementTree.Element('msmsParams')
-                    base.append(param_set_el)
+        assert isinstance(val, collections.Sequence)
+        for param_set in val:
+            param_set_el = ElementTree.Element('msmsParams')
+            base.append(param_set_el)
 
-                    assert isinstance(param_set, collections.Mapping)
-                    for name, value in param_set.items():
-                        if name in ['Tolerance', 'DeNovoTolerance']:
-                            tol = ElementTree.Element(name)
-                            param_set_el.append(tol)
+            assert isinstance(param_set, collections.Mapping)
+            for name, value in param_set.items():
+                if name in ['Tolerance', 'DeNovoTolerance']:
+                    tol = ElementTree.Element(name)
+                    param_set_el.append(tol)
 
-                            tol_val = ElementTree.Element('Value')
-                            tol_val.text = encode(value['value'])
-                            tol.append(tol_val)
+                    tol_val = ElementTree.Element('Value')
+                    tol_val.text = encode(value['value'])
+                    tol.append(tol_val)
 
-                            tol_unit = ElementTree.Element('Unit')
-                            tol_unit.text = encode(value['unit'])
-                            tol.append(tol_unit)
-                        else:
-                            param_set_el.attrib[name] = encode(value)
-            else:
-                base.text = encode(val)
+                    tol_unit = ElementTree.Element('Unit')
+                    tol_unit.text = encode(value['unit'])
+                    tol.append(tol_unit)
+                else:
+                    param_set_el.attrib[name] = encode(value)
 
 
-class GlobalParams:
+class GlobalParams(MQParamSet):
 
-    def __init__(self, default_data):
-        self._keys = _schema['properties']['globalParams']['properties'].keys()
-        self._schema = _schema['properties']['globalParams']['properties']
-        self._data = copy(default_data['globalParams'])
-
-    def update_data(self, user_data):
-        rec_update(self._data, user_data['globalParams'])
-
-    def from_xml(self, xml_tree):
-        self._data = {}
-        root = xml_tree.getroot()
-        for key, val in self._schema.items():
-
-            if key in ['restrictMods', 'fixedModifications']:
-                mods = []
-                for string in root.find(key):
-                    mods.append(string.text.strip())
-                self._data[key] = mods
-
-            else:
-                elem = root.find(key)
-                schema = self._schema[key]
-                try:
-                    self._data[key] = decode(elem.text, schema['type'])
-                except ValueError:
-                    raise ValueError(
-                        "Could not parse key {}".format(key))
-
-    def add_to_xml(self, xml_root):
-        for key, val in self._data.items():
-            base = ElementTree.Element(key)
-            xml_root.append(base)
-
-            if key == 'restrictMods':
-
-                assert isinstance(val, list)
-                for name in val:
-                    string_el = ElementTree.Element('string')
-                    string_el.text = name
-                    base.append(string_el)
-
-                #rpq = ElementTree.Element('restrictProteinQuantification')
-                #rpq.text = encode(len(val) != 0)
-                #xml_root.append(rpq)
-            elif key == 'fixedModifications':
-                assert isinstance(val, list)
-                for name in val:
-                    string_el = ElementTree.Element('string')
-                    string_el.text = name
-                    base.append(string_el)
-            else:
-                base.text = encode(val)
+    def __init__(self):
+        super().__init__(_schema['properties']['globalParams'])
