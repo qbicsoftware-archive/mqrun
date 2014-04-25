@@ -13,7 +13,7 @@ import fscall
 import mqparams
 
 MAXQUEUE = 5
-LISTENDIR = Path()
+LISTENDIR = Path().resolve()
 NUM_WORKERS = 5
 TASK_RE = "input\_[a-zA-Z0-9]*"
 BEAT_INTERVAL = 2
@@ -21,7 +21,7 @@ MQBINPATH = Path('c:/Users/adr/Desktop/MaxQuant/bin/MaxQuantCmd.exe')
 
 logging.basicConfig(
     level=logging.DEBUG,
-    filename='daemon.log',
+    filename='maxquant.log',
 )
 
 
@@ -84,35 +84,31 @@ def run_maxquant(log, infiles, outdir, tmpdir):
 
     try:
         result = mqparams.mqrun(
-            MQBINPATH, params, raw_files, fasta_files, outdir, tmpdir
+            MQBINPATH, params, raw_files, fasta_files, outdir, tmpdir, log
         )
-    except:
+    except Exception as e:
+        log.error("Could not execute MaxQuant: " + str(e))
         raise
-    # TODO
-    """except mqparams.MQParamError as e:
-        log.error("Invalid parameter file: " + str(e))
-        raise
-    except mqparams.MQRunError as e:
-        log.error("Error while runnig MaxQuant: " + str(e))
-        raise
-        raise
-    """
 
     return result
 
 
 def fill_queue(task_queue, listener):
     for task in listener:
-        task.status("WAITING")
-        task._start_beat(BEAT_INTERVAL)
         try:
-            logging.info("Add new task to queue: " + task.uuid)
-            logging.info("Size of queue is approx " + str(task_queue.size))
-            task_queue.put_nowait(task)
-        except queue.Full:
-            task._stop_beat()
-            logging.error("Queue is full. Can't add task " + task.uuid)
-            task.error("Compute node overloaded")
+            task.status("WAITING")
+            task._start_beat(BEAT_INTERVAL)
+            try:
+                logging.info("Add new task to queue: " + task.uuid)
+                logging.info("Size of queue is approx "
+                             + str(task_queue.qsize()))
+                task_queue.put_nowait(task)
+            except queue.Full:
+                task._stop_beat()
+                logging.error("Queue is full. Can't add task " + task.uuid)
+                task.error("Compute node overloaded")
+        except Exception as e:
+            logging.critical("Unknown exception in listener thread: " + str(e))
 
 
 def worker(task_queue):
@@ -122,25 +118,24 @@ def worker(task_queue):
             task.status('WORKING')
             task._stop_beat()
             with task.beat(BEAT_INTERVAL):
-                # TODO
-                #try:
-                result = run_maxquant(
-                    task.log, task.infiles, task.outdir, task.outdir
-                )
-                #except Exception as e:
-                #    task.error(str(e))
-                #else:
-                #    task.outfiles = result.outfiles
-                #    task.success()
+                try:
+                    outfiles = run_maxquant(
+                        task.log, task.infiles, task.outdir, task.outdir
+                    )
+                except Exception as e:
+                    task.error(str(e))
+                else:
+                    task.outfiles = outfiles
+                    task.success()
         except Exception as e:
             logging.critical("Unknown error in worker thread: " + str(e))
 
 
 def main():
     logging.info("Starting daemon")
-    logging.info("LISTENDIR is " + LISTENDIR)
-    logging.info("MAXQUEUE is " + MAXQUEUE)
-    logging.info("NUM_WORKERS is " + NUM_WORKERS)
+    logging.info("LISTENDIR is " + str(LISTENDIR))
+    logging.info("MAXQUEUE is " + str(MAXQUEUE))
+    logging.info("NUM_WORKERS is " + str(NUM_WORKERS))
     logging.info("Path to MaxQuant is " + str(MQBINPATH))
     listener = fscall.listen(
         LISTENDIR,
@@ -152,7 +147,7 @@ def main():
         name="receive_tread",
         args=(task_queue, listener),
     )
-    logging.info('Start to listen in directory ' + LISTENDIR)
+    logging.info('Start to listen in directory ' + str(LISTENDIR))
     fill_thread.start()
 
     workers = []

@@ -13,11 +13,11 @@ def listen(listen_dir, maxqueue=0, task_re=None, interval=2):
     if not listen_dir.is_dir():
         raise ValueError("Can only listen in a directory")
     while True:
-        logging.debug("looking for new tasks in dir " + str(listen_dir))
+        logging.debug("Look for new tasks in dir " + str(listen_dir))
         dirs = [dir for dir in listen_dir.iterdir() if dir.is_dir()]
         for dir in dirs:
             if task_re and not re.match(task_re, dir.name):
-                logging.debug("skipping dir {}, does not match re"
+                logging.debug("Skip dir {}, does not match re"
                               .format(str(dir)))
                 continue
             if (dir / "START").exists():
@@ -71,7 +71,7 @@ class FSRequest(object):
         )
 
         self._prepare_logger()
-        self.log.info("Starting log in task-local logfile")
+        self.log.info("Start log in task-local logfile")
 
         try:
             (dir / "output").mkdir()
@@ -82,7 +82,7 @@ class FSRequest(object):
 
         self._beat_file = dir / "BEAT"
         if self._beat_file.exists():
-            self.log.warn("Overwriting BEAT-file")
+            self.log.warn("Overwrite BEAT-file")
 
     def _prepare_logger(self):
         logfile = self._dir / "logfile.txt"
@@ -104,20 +104,26 @@ class FSRequest(object):
 
     def success(self, message=None):
         self._write_file("SUCCESS")
-        self.log.info("successfully finished task")
+        self.log.info("Successfully finished task")
         self._stop_beat()
+        self.status('SUCCESS')
 
     def error(self, message=None):
         self._stop_beat()
         self.log.error("Task failed. Message was: " + message)
         self._write_file("FAILED", message)
+        self.status('FAILED')
 
     def status(self, status):
         self._write_file("STATUS", status)
-        self.log.info("switched status to " + status)
+        self.log.info("Switch to status " + status)
 
     def _write_file(self, filename, message):
-        pass
+        try:
+            with (self._dir / filename).open('w') as f:
+                f.write(message)
+        except (IOError, OSError) as f:
+            self.log.critical("Can not write status file " + str(filename))
 
     def _start_beat(self, interval):
         self._stop_beating_flag = False

@@ -12,10 +12,10 @@ except ImportError:
     from StringIO import StringIO as BytesIO
 
 
-__all__ = ['xml_to_data', 'data_to_xml']
+__all__ = ['xml_to_data', 'data_to_xml', 'mqrun', 'ExtraMQData']
 
 
-with open('./schema_title.json') as f:
+with open('./mqschema.json') as f:
     _schema = json.load(f)
 
 
@@ -72,7 +72,11 @@ def rec_update(d, u):
             d[k] = u[k]
 
 
-def data_to_xml(user_data, file_paths, fasta_paths, output_dir, tmp_dir):
+def data_to_xml(user_data, file_paths, fasta_paths,
+                output_dir, tmp_dir, logger=None):
+    if logger is None:
+        logger = logging
+
     if file_paths is None:
         file_paths = {}
     if fasta_paths is None:
@@ -88,19 +92,16 @@ def data_to_xml(user_data, file_paths, fasta_paths, output_dir, tmp_dir):
                        (OutputParams, None),
                        (FastaParams, 'fastaFiles'),
                        (TopLevelParams, 'topLevelParams')]:
-        writer = klass()
+        writer = klass(logger)
         writer.update_data(extra_data=extra_data)
         if key is not None:
             writer.update_data(user_data.get(key, None))
         writer.write_into_xml(tree)
 
-    xml_file = BytesIO()
-    tree.write(xml_file, 'utf-8')
-    s = xml_file.getvalue().decode()
     return tree
 
 
-def xml_to_data(xml_tree):
+def xml_to_data(xml_tree, logger=None):
     data = {}
     extra = ExtraMQData(None, None, None, None)
 
@@ -110,7 +111,7 @@ def xml_to_data(xml_tree):
                        (OutputParams, None),
                        (FastaParams, 'fastaFiles'),
                        (TopLevelParams, 'topLevelParams')]:
-        reader = klass()
+        reader = klass(logger)
         reader.from_xml(xml_tree)
         if key is not None:
             data[key] = reader.data
@@ -120,22 +121,24 @@ def xml_to_data(xml_tree):
     return data, extra
 
 
-def mqrun(binpath, params, raw_files, fasta_files, outdir, tmpdir):
-    print(raw_files)
-    print(fasta_files)
+def mqrun(binpath, params, raw_files, fasta_files,
+          outdir, tmpdir, logger=None):
+    if logger is None:
+        logger = logging
     outdir = Path(outdir)
     logging.info("Writing parameter file")
     xml_path = outdir / "params.xml"
     with xml_path.open('wb') as f:
-        xml = data_to_xml(params, raw_files, fasta_files, outdir, tmpdir)
+        xml = data_to_xml(params, raw_files, fasta_files,
+                          outdir, tmpdir, logger)
         xml.write(f)
-    logging.info("Run MaxQuant")
+    logger.info("Run MaxQuant")
     mqcall = subprocess.Popen(
         [str(binpath), '-mqparams', str(xml_path)],
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
     )
-    logging.info("MaxQuant running with pid " + str(mqcall.pid))
+    logger.info("MaxQuant running with pid " + str(mqcall.pid))
     mqcall.wait()
 
 
@@ -155,7 +158,10 @@ class MQParamSet(object):
     def extra_data(self):
         return self._extra_data
 
-    def __init__(self, schema, defaults={}):
+    def __init__(self, schema, defaults={}, logger=None):
+        if logger is None:
+            logger = logging
+        self._logger = logger
         self._schema = schema
         self._data = None
         self._extra_data = ExtraMQData({}, {}, None, None)
@@ -269,10 +275,11 @@ class MQParamSet(object):
 
 class RawFileParams(MQParamSet):
 
-    def __init__(self):
+    def __init__(self, logger=None):
         super().__init__(
             _schema['properties']['rawFiles'],
-            _defaults['rawFileParams']
+            _defaults['rawFileParams'],
+            logger,
         )
 
     def update_data(self, user_data=None, extra_data=None):
@@ -383,10 +390,11 @@ class RawFileParams(MQParamSet):
 
 class MSMSParams(MQParamSet):
 
-    def __init__(self):
+    def __init__(self, logger=None):
         super().__init__(
             _schema['properties']['MSMSParams'],
-            _defaults['MSMSParams']
+            _defaults['MSMSParams'],
+            logger,
         )
 
     def from_xml(self, xml_tree):
@@ -446,19 +454,21 @@ class MSMSParams(MQParamSet):
 
 class GlobalParams(MQParamSet):
 
-    def __init__(self):
+    def __init__(self, logger=None):
         super().__init__(
             _schema['properties']['globalParams'],
-            _defaults['globalParams']
+            _defaults['globalParams'],
+            logger,
         )
 
 
 class OutputParams(MQParamSet):
 
-    def __init__(self):
+    def __init__(self, logger=None):
         super().__init__(
             _schema['properties']['outputOptions'],
-            None
+            None,
+            logger,
         )
 
     def from_xml(self, xml_tree, ignore=[]):
@@ -486,10 +496,11 @@ class OutputParams(MQParamSet):
 
 class TopLevelParams(MQParamSet):
 
-    def __init__(self):
+    def __init__(self, logger=None):
         super().__init__(
             _schema['properties']['topLevelParams'],
             _defaults['topLevelParams'],
+            logger,
         )
 
     def from_xml(self, xml_tree, ignore=[]):
@@ -522,10 +533,11 @@ class TopLevelParams(MQParamSet):
 
 class FastaParams(MQParamSet):
 
-    def __init__(self):
+    def __init__(self, logger=None):
         super().__init__(
             _schema['properties']['fastaFiles'],
             None,
+            logger,
         )
 
     def from_xml(self, xml_tree, ignore=[]):
