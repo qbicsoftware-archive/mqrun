@@ -2,7 +2,9 @@ import json
 from copy import deepcopy
 import collections
 from xml.etree import ElementTree
-from pathlib import PureWindowsPath
+from pathlib import PureWindowsPath, Path
+import subprocess
+import logging
 
 try:
     from io import BytesIO
@@ -25,6 +27,9 @@ with open('./default_values.json') as f:
     _defaults.setdefault('MSMSParams', {})['default'] = _vals['MSMSParams']
     _defaults.setdefault('rawFileParams', {})['default'] = (
         _vals['rawFiles'][0]['params']
+    )
+    _defaults.setdefault('topLevelParams', {})['default'] = (
+        _vals['topLevelParams']
     )
 
 
@@ -67,18 +72,26 @@ def rec_update(d, u):
             d[k] = u[k]
 
 
-def data_to_xml(user_data, default_data, file_paths, output_dir, tmp_dir):
-    extra_data = ExtraMQData(file_paths, output_dir, tmp_dir)
+def data_to_xml(user_data, file_paths, fasta_paths, output_dir, tmp_dir):
+    if file_paths is None:
+        file_paths = {}
+    if fasta_paths is None:
+        fasta_paths = {}
+    extra_data = ExtraMQData(file_paths, fasta_paths, output_dir, tmp_dir)
 
     root = ElementTree.Element('MaxQuantParams')
     tree = ElementTree.ElementTree(root)
 
     for klass, key in [(MSMSParams, 'MSMSParams'),
                        (GlobalParams, 'globalParams'),
-                       (RawFileParams, 'rawFiles')]:
+                       (RawFileParams, 'rawFiles'),
+                       (OutputParams, None),
+                       (FastaParams, 'fastaFiles'),
+                       (TopLevelParams, 'topLevelParams')]:
         writer = klass()
-        writer.update_data(default_data[key])
-        writer.update_data(user_data[key], extra_data)
+        writer.update_data(extra_data=extra_data)
+        if key is not None:
+            writer.update_data(user_data.get(key, None))
         writer.write_into_xml(tree)
 
     xml_file = BytesIO()
@@ -89,26 +102,46 @@ def data_to_xml(user_data, default_data, file_paths, output_dir, tmp_dir):
 
 def xml_to_data(xml_tree):
     data = {}
+    extra = ExtraMQData(None, None, None, None)
 
-    global_params = GlobalParams()
-    global_params.from_xml(xml_tree)
-    raw_file_params = RawFileParams()
-    raw_file_params.from_xml(xml_tree)
-    msms_params = MSMSParams()
-    msms_params.from_xml(xml_tree)
+    for klass, key in [(MSMSParams, 'MSMSParams'),
+                       (GlobalParams, 'globalParams'),
+                       (RawFileParams, 'rawFiles'),
+                       (OutputParams, None),
+                       (FastaParams, 'fastaFiles'),
+                       (TopLevelParams, 'topLevelParams')]:
+        reader = klass()
+        reader.from_xml(xml_tree)
+        if key is not None:
+            data[key] = reader.data
+        reader.update_data(extra_data=extra)
+        extra = reader.extra_data
 
-    data['globalParams'] = global_params.data
-    data['rawFiles'] = raw_file_params.data
-    data['MSMSParams'] = msms_params.data
+    return data, extra
 
-    extra_data = raw_file_params.extra_data
 
-    return data, extra_data
+def mqrun(binpath, params, raw_files, fasta_files, outdir, tmpdir):
+    print(raw_files)
+    print(fasta_files)
+    outdir = Path(outdir)
+    logging.info("Writing parameter file")
+    xml_path = outdir / "params.xml"
+    with xml_path.open('wb') as f:
+        xml = data_to_xml(params, raw_files, fasta_files, outdir, tmpdir)
+        xml.write(f)
+    logging.info("Run MaxQuant")
+    mqcall = subprocess.Popen(
+        [str(binpath), '-mqparams', str(xml_path)],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+    )
+    logging.info("MaxQuant running with pid " + str(mqcall.pid))
+    mqcall.wait()
 
 
 ExtraMQData = collections.namedtuple(
     'ExtraMQData',
-    ['file_paths', 'output_dir', 'tmp_dir']
+    ['file_paths', 'fasta_paths', 'output_dir', 'tmp_dir']
 )
 
 
@@ -125,18 +158,18 @@ class MQParamSet(object):
     def __init__(self, schema, defaults={}):
         self._schema = schema
         self._data = None
-        self._extra_data = ExtraMQData(None, None, None)
+        self._extra_data = ExtraMQData({}, {}, None, None)
         self._defaults = defaults
 
     def update_data(self, user_data=None, extra_data=None):
         if extra_data is not None:
             old = list(self._extra_data)
             for i, dat in enumerate(extra_data):
-                if dat is not None:
+                if dat is not None and dat != {}:
                     old[i] = dat
             self._extra_data = ExtraMQData(*old)
 
-        if user_data is not None:
+        if user_data is not None and user_data != {}:
             if 'defaults' in user_data:
                 self._data = deepcopy(self._defaults[user_data['defaults']])
             else:
@@ -230,7 +263,8 @@ class MQParamSet(object):
                     raise ValueError("list of {} not supported"
                                      .format(schema[key]["items"]["type"]))
             else:
-                data_el.text = encode(value)
+                if value is not None:
+                    data_el.text = encode(value)
 
 
 class RawFileParams(MQParamSet):
@@ -312,7 +346,8 @@ class RawFileParams(MQParamSet):
 
         for i, file_data in enumerate(self._data):
             experiment = ElementTree.Element('string')
-            experiment.text = encode(file_data['experiment'])
+            if 'experiment' in file_data:
+                experiment.text = encode(file_data['experiment'])
             experiments.append(experiment)
 
             file_path = ElementTree.Element('string')
@@ -325,11 +360,13 @@ class RawFileParams(MQParamSet):
             file_paths.append(file_path)
 
             fraction = ElementTree.Element('short')
-            fraction.text = encode(file_data['fraction'])
+            if 'fraction' in file_data:
+                fraction.text = encode(file_data['fraction'])
             fractions.append(fraction)
 
             matching_ = ElementTree.Element('unsignedByte')
-            matching_.text = encode(file_data['matching'])
+            if 'matching' in file_data:
+                matching_.text = encode(file_data['matching'])
             matching.append(matching_)
 
             param_group_ind = ElementTree.Element('int')
@@ -414,3 +451,129 @@ class GlobalParams(MQParamSet):
             _schema['properties']['globalParams'],
             _defaults['globalParams']
         )
+
+
+class OutputParams(MQParamSet):
+
+    def __init__(self):
+        super().__init__(
+            _schema['properties']['outputOptions'],
+            None
+        )
+
+    def from_xml(self, xml_tree, ignore=[]):
+        assert ignore == []
+        tmp_folder = decode(xml_tree.find('tempFolder').text, 'string')
+        outdir = decode(xml_tree.find('fixedCombinedFolder').text, 'string')
+        self.update_data(
+            extra_data=ExtraMQData(None, None, outdir, tmp_folder)
+        )
+
+    def write_into_xml(self, xml_tree, ignore=[]):
+        assert ignore == []
+        data = self.extra_data
+        root = xml_tree.getroot()
+        tempFolder = ElementTree.Element('tempFolder')
+        if data.tmp_dir is not None:
+            tempFolder.text = encode(data.tmp_dir)
+        root.append(tempFolder)
+
+        outdir = ElementTree.Element('fixedCombinedFolder')
+        if data.output_dir is not None:
+            outdir.text = encode(data.output_dir)
+        root.append(outdir)
+
+
+class TopLevelParams(MQParamSet):
+
+    def __init__(self):
+        super().__init__(
+            _schema['properties']['topLevelParams'],
+            _defaults['topLevelParams'],
+        )
+
+    def from_xml(self, xml_tree, ignore=[]):
+        assert ignore == []
+        root = xml_tree.getroot()
+
+        data = {}
+
+        for key in self._schema['properties']:
+            if key == 'defaults':
+                continue
+
+            data[key] = decode(
+                root.attrib[key],
+                self._schema['properties'][key]['type'],
+            )
+
+        self.update_data(user_data=data)
+
+    def write_into_xml(self, xml_tree, ignore=[]):
+        assert ignore == []
+        root = xml_tree.getroot()
+
+        for key in self._schema['properties']:
+            if key == 'defaults':
+                continue
+
+            root.attrib[key] = encode(self.data[key])
+
+
+class FastaParams(MQParamSet):
+
+    def __init__(self):
+        super().__init__(
+            _schema['properties']['fastaFiles'],
+            None,
+        )
+
+    def from_xml(self, xml_tree, ignore=[]):
+        assert ignore == []
+        root = xml_tree.getroot()
+
+        data = {}
+
+        fasta_files = {}
+
+        for file in root.find('fastaFiles'):
+            path = PureWindowsPath(file.text)
+            fasta_files[path.stem] = str(path)
+
+        data['fileNames'] = list(fasta_files.keys())
+
+        first_search = []
+
+        for file in root.find('fastaFilesFirstSearch'):
+            path = PureWindowsPath(file.text)
+            if fasta_files.get(path.stem, str(path)) != str(path):
+                raise ValueError("File name for fasta file not unique")
+            fasta_files[path.stem] = str(path)
+            first_search.append(path.stem)
+
+        data['firstSearch'] = first_search
+
+        self.update_data(extra_data=ExtraMQData(None, fasta_files, None, None))
+        self.update_data(user_data=data)
+
+    def write_into_xml(self, xml_tree, ignore=[]):
+        assert ignore == []
+        root = xml_tree.getroot()
+
+        file_paths = self.extra_data.fasta_paths
+
+        base = ElementTree.Element('fastaFiles')
+        root.append(base)
+
+        for name in self.data['fileNames']:
+            item = ElementTree.Element('string')
+            base.append(item)
+            item.text = file_paths[name]
+
+        base = ElementTree.Element('fastaFilesFirstSearch')
+        root.append(base)
+
+        for name in self.data['firstSearch']:
+            item = ElementTree.Element('string')
+            base.append(item)
+            item.text = file_paths[name]
