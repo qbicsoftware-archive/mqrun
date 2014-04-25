@@ -16,6 +16,13 @@
                     "type": "string",
                     "name": "ein name"
                 },
+		"fixedSearchFolder": {
+		    "id": "#fixedSearchFolder",
+		    "title": "fixedSearchFolder",
+		    "type": "string",
+		    "name": "",
+		    "required": false
+		},
                 "minScoreUnmodifiedPeptides": {
                     "id": "#minScoreUnmodifiedPeptides",
                     "description": "",
@@ -158,6 +165,32 @@
                     "type": "boolean",
                     "name": ""
                 },
+                "massDifferenceMods": {
+                    "id": "#massDifferenceMods",
+                    "title": "massDifferenceMods",
+                    "required": false,
+                    "type": "array",
+                    "name": "",
+                    "items": {
+			"uniqueItems": true,
+			"id": "#0",
+			"minItems": 0,
+			"items": {
+				"id": "#0",
+				"minLength": 0,
+				"description": "",
+				"title": "items",
+				"required": false,
+				"type": "string",
+				"name": ""
+			},
+			"description": "",
+			"title": "items",
+			"required": false,
+			"type": "array",
+			"name": ""
+		    }
+		},
                 "dependentPeptideFdr": {
                     "id": "#dependentPeptideFdr",
                     "description": "",
@@ -343,6 +376,12 @@
                     "type": "boolean",
                     "name": ""
                 },
+		"crossLinker": {
+                    "id": "#crossLinker",
+		    "title": "crossLinker",
+		    "type": "string",
+		    "name": ""
+		},
                 "crossLinkerSearch": {
                     "id": "#crossLinkerSearch",
                     "description": "",
@@ -1279,33 +1318,47 @@
             "name": ""
         },
         "fastaFiles": {
-            "uniqueItems": false,
-            "id": "#fastaFiles",
-            "minItems": 0,
-            "items": {
-                "id": "#0",
-                "properties": {
-                    "path": {
-                        "id": "#path",
-                        "minLength": 0,
-                        "description": "",
-                        "title": "path",
-                        "required": false,
-                        "type": "string",
-                        "name": ""
-                    }
-                },
-                "description": "",
-                "title": "items",
-                "required": false,
-                "type": "object",
-                "name": ""
-            },
-            "description": "",
-            "title": "fastaFiles",
-            "required": false,
-            "type": "array",
-            "name": "fasta files"
+	    "name": "",
+	    "title": "fastaFiles",
+	    "type": "object",
+	    "properties": {
+		"fileNames": {
+			"uniqueItems": false,
+			"id": "#fastaFiles",
+			"minItems": 0,
+			"items": {
+				"id": "#0",
+				"properties": {
+				"path": {
+					"id": "#path",
+					"minLength": 0,
+					"description": "",
+					"title": "path",
+					"required": false,
+					"type": "string",
+					"name": ""
+				}
+				},
+				"description": "",
+				"title": "items",
+				"required": false,
+				"type": "object",
+				"name": ""
+			},
+			"description": "",
+			"title": "fastaFiles",
+			"required": false,
+			"type": "array",
+			"name": "fasta files"
+		},
+		"firstSearch": {
+			"id": "#fastaFilesFirstSearch",
+			"name": "",
+			"title": "fastaFilesFirstSearch",
+			"type": "string",
+			"required": false
+		}
+	    }
         },
         "topLevelParams": {
             "id": "#topLevelParams",
