@@ -19,7 +19,10 @@ TASK_RE = "input\_[a-zA-Z0-9]*"
 BEAT_INTERVAL = 2
 MQBINPATH = Path('c:/Users/adr/Desktop/MaxQuant/bin/MaxQuantCmd.exe')
 
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(
+    level=logging.DEBUG,
+    filename='daemon.log',
+)
 
 
 def get_files(log, infiles):
@@ -103,31 +106,42 @@ def fill_queue(task_queue, listener):
         task.status("WAITING")
         task._start_beat(BEAT_INTERVAL)
         try:
+            logging.info("Add new task to queue: " + task.uuid)
+            logging.info("Size of queue is approx " + str(task_queue.size))
             task_queue.put_nowait(task)
         except queue.Full:
             task._stop_beat()
+            logging.error("Queue is full. Can't add task " + task.uuid)
             task.error("Compute node overloaded")
 
 
 def worker(task_queue):
     while True:
-        task = task_queue.get()
-        task.status('WORKING')
-        task._stop_beat()
-        with task.beat(BEAT_INTERVAL):
-            # TODO
-            #try:
-            result = run_maxquant(
-                task.log, task.infiles, task.outdir, task.outdir
-            )
-            #except Exception as e:
-            #    task.error(str(e))
-            #else:
-            #    task.outfiles = result.outfiles
-            #    task.success()
+        try:
+            task = task_queue.get()
+            task.status('WORKING')
+            task._stop_beat()
+            with task.beat(BEAT_INTERVAL):
+                # TODO
+                #try:
+                result = run_maxquant(
+                    task.log, task.infiles, task.outdir, task.outdir
+                )
+                #except Exception as e:
+                #    task.error(str(e))
+                #else:
+                #    task.outfiles = result.outfiles
+                #    task.success()
+        except Exception as e:
+            logging.critical("Unknown error in worker thread: " + str(e))
 
 
 def main():
+    logging.info("Starting daemon")
+    logging.info("LISTENDIR is " + LISTENDIR)
+    logging.info("MAXQUEUE is " + MAXQUEUE)
+    logging.info("NUM_WORKERS is " + NUM_WORKERS)
+    logging.info("Path to MaxQuant is " + str(MQBINPATH))
     listener = fscall.listen(
         LISTENDIR,
         task_re=TASK_RE,
@@ -138,6 +152,7 @@ def main():
         name="receive_tread",
         args=(task_queue, listener),
     )
+    logging.info('Start to listen in directory ' + LISTENDIR)
     fill_thread.start()
 
     workers = []
@@ -148,6 +163,7 @@ def main():
             args=(task_queue,),
         )
         workers.append(thread)
+        logging.info('Starting worker "{}"'.format(thread.name))
         thread.start()
 
 
