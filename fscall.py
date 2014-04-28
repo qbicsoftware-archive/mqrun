@@ -16,7 +16,7 @@ def listen(listen_dir, maxqueue=0, task_re=None, interval=2):
         logging.debug("Look for new tasks in dir " + str(listen_dir))
         dirs = [dir for dir in listen_dir.iterdir() if dir.is_dir()]
         for dir in dirs:
-            if task_re and not re.match(task_re, dir.name):
+            if task_re and not re.fullmatch(task_re, dir.name):
                 logging.debug("Skip dir {}, does not match re"
                               .format(str(dir)))
                 continue
@@ -29,7 +29,7 @@ def listen(listen_dir, maxqueue=0, task_re=None, interval=2):
                 logging.info("New task in dir " + str(dir))
                 try:
                     task = FSRequest(dir)
-                except ImportError as e:  # TODO set exception
+                except Exception as e:
                     logging.error("Could not create Task: " + str(e))
                 else:
                     yield task
@@ -71,6 +71,8 @@ class FSRequest(object):
         )
 
         self._prepare_logger()
+        self.log.info("Create new task for {} with uuid {}"
+                      .format(self._dir, self._uuid))
         self.log.info("Start log in task-local logfile")
 
         try:
