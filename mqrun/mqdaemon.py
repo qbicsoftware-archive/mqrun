@@ -38,8 +38,7 @@ except ImportError:
     yaml = None
 import json
 
-import fscall
-import mqparams
+from . import fscall, mqparams
 
 
 MQBINPATH = Path() / "todo"

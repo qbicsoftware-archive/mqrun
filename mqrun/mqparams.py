@@ -1,21 +1,22 @@
 """
-========
-mqparams
-========
+==========================================
+Convert parameters (:mod:`mqrun.mqparams`)
+==========================================
+
+.. currentmodule:: mqrun.mqparams
 
 Convert between json or yaml and MaxQuant configuration files.
 
-This module exports the following functions:
+Contents
+========
 
-xml_to_data
-    Extract parameters and paths from an MaxQuant configuration file.
+.. autosummary::
+    :toctree: generated/
 
-data_to_xml
-    Convert parameters and paths to a MaxQuant configuration file.
+    xml_to_data
+    data_to_xml
+    mqrun
 
-mqrun
-    Convenients function to run MaxQuant with the specified parameters and
-    paths.
 
 Parameters files
 ================
@@ -130,14 +131,16 @@ import subprocess
 import logging
 import numbers
 
-__all__ = ['xml_to_data', 'data_to_xml', 'mqrun', 'ExtraMQData']
+__all__ = ['xml_to_data', 'data_to_xml', 'mqrun']
 
 
-with open('./mqschema.json') as f:
+datadir = Path(__file__).parent / "data"
+
+with (datadir / 'mqschema.json').open() as f:
     _schema = json.load(f)
 
 
-with open('./default_values.json') as f:
+with (datadir / 'default_values.json').open() as f:
     _vals = json.load(f)
     _defaults = {}
     _defaults['default'] = {}
@@ -203,8 +206,8 @@ def data_to_xml(user_data, file_paths, fasta_paths,
                 output_dir, tmp_dir=None, logger=None):
     """ Convert parameter set to MaxQuant xml.
 
-    Arguments
-    ---------
+    Parameters
+    ----------
     user_data : dict
         The parameters for MaxQuant as described the module doc of mqparams.
     file_paths : dict
@@ -256,8 +259,8 @@ def data_to_xml(user_data, file_paths, fasta_paths,
 def xml_to_data(xml_tree, logger=None):
     """ Extract parameters and file-paths from MaxQuant configuration file
 
-    Arguments
-    ---------
+    Parameters
+    ----------
     xml_tree : xml.etree.ElementTree.Element.Tree
         MaxQuant configuration file.
     logger : logging.Logger, optional
@@ -305,6 +308,7 @@ def xml_to_data(xml_tree, logger=None):
 
 def mqrun(binpath, params, raw_files, fasta_files,
           outdir, tmpdir, logger=None):
+    """  Run MaxQuant with specified parameters and paths. """
     if logger is None:
         logger = logging
     outdir = Path(outdir)

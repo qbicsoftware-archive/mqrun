@@ -1,0 +1,3 @@
+
+.. automodule:: mqrun.mqparams
+
