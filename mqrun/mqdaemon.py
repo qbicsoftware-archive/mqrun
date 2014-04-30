@@ -1,6 +1,12 @@
 #!/usr/bin/env python
 """
-Start a daemon, that listens for new directories. Each new directory that
+=======================================
+MaxQuant Server (:mod:`mqrun.mqdaemon`)
+=======================================
+
+
+
+Start a daemon that listens for new directories. Each new directory that
 satisfies some conditions will be interpreted as a request to run MaxQuant on
 the files in that directory. The protocoll that is used to communicate failure
 or success is described in `fscall.py`.
