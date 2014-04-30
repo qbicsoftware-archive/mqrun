@@ -1,9 +1,24 @@
 from setuptools import setup
 import os
+import sys
 import re
 import codecs
 
 here = os.path.abspath(os.path.dirname(__file__))
+
+pyversion = sys.version_info
+if pyversion.major < 3:
+    if pyversion.minor < 7:
+        raise ValueError("Requires python2.7 or later")
+    requires_pathlib = True
+else:
+    assert pyversion.major >= 3
+    requires_pathlib = pyversion.minor < 4
+
+requirements = []
+
+if requires_pathlib:
+    requirements.append('pathlib>=1.0')
 
 
 def find_version(*file_paths):
@@ -39,7 +54,7 @@ setup(
     ],
     keywords="MaxQuant proteomics",
     packages=['mqrun'],
-    install_requires=[],
+    install_requires=requirements,
     package_data={
         "mqrun": ['data/*'],
     },
