@@ -12,7 +12,10 @@ Contents:
    :maxdepth: 2
 
    readme_link
+   quickstart
    mqparams
+   mqdaemon
+   fscall
 
 
 Indices and tables

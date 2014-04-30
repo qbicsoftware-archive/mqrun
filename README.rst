@@ -11,27 +11,26 @@ Both make it hard to integrate into a larger workflow.
 
 mqrun consists of four parts, that try to mitigate those problems:
 
-``mqparams``
+:mod:`mqrun.mqparams`
     This is a small library that converts user supplied json-parameter files
     into the rather peculiar configuration files of MaxQuant and supplies a
     small helper function that calles the MaxQuant executable with this
     configuration. The format of the parameter file is documented in
-    ``mqparams.py``. Since the format of the MaxQuant configuration file keeps
-    changing, mqparams supports one version of MaxQuant only. For details see
-    ``mqparams.py``.
+    :mod:`mqrun.mqparams`. Since the format of the MaxQuant configuration file
+    keeps changing, mqparams supports one version of MaxQuant only.
 
-``fscall``
+:mod:`mqrun.fscall`
     ``fscall`` is a library that handles requests to another machine, where the
     filesystem is the only communication channel. It handles status messages,
     simple error handling, access to logfiles and a heartbeat that tells the
     client that the server is still working on a request.
 
-``mqdaemon``
+:mod:`mqrun.mqdaemon`
     ``mqdaemon`` uses ``fscall`` to provide a server that can run on a Windows
     machine and handles requests for MaxQuant. It includes basic load
     balancing. See ``mqdaemon -h`` for options.
 
-``mqclient``
+:mod:`mqrun.mqclient`
     ``mqclient`` is a small client library that wraps the ``fscall`` routines
     to provide a convenient interface for programs running on linux (or
     windows) machines, that want to run MaxQuant.
@@ -59,22 +58,25 @@ installer). Make sure the python executables are added to the path.
 
 Open a terminal and execute
 
-``` bash
-$ pip install PyYAML
-$ pip install mqrun
-```
+.. code:: bash
 
-TODO: Get rid of those error dialogs!
-TODO: Add fasta files to Andromeda?
+   pip install mqrun
+
+.. todo::
+
+   Get rid of those error dialogs!
+
+   Add fasta files to Andromeda?
 
 Linux installation instructions
 ===============================
 
 Open a terminal as root and execute
 
-``` bash
-$ pip install mqrun
-```
+.. code:: bash
+
+   pip install mqrun
+
 
 Configuration
 =============
@@ -104,12 +106,29 @@ lines of this:
     writeable = yes
     public = no
 
+Change the permissions in the share:
+
+.. code:: bash
+
+    cd /mnt/win_share
+    mkdir requests
+    chmod g+w requests
+    chmod g-rx requests
+    chmod o-rw requests
+
+and set permissions for the global log file:
+
+.. code:: bash
+
+    touch maxquant.log
+    chmod g-rw
+    chmod o-rw
 
 Then add a Samba user
 
 .. code:: bash
 
-    $ sudo smbpasswd -a linux_user
+    sudo smbpasswd -a linux_user
 
 
 and choose a password ``linux_user_passwd``.
@@ -119,6 +138,10 @@ smbd`` mount the Samba share on the windows machine with ``Add network drive``
 (TODO?) and the credentials ``linux_user`` and ``linux_user_passwd``. It should
 now be possible to exchange files between ``win_host`` and ``linux_host``.
 
+.. todo::
+
+   Explain the different users involved
+
 Start mqdaemon
 --------------
 
@@ -126,20 +149,20 @@ Open a command line on ``win_host`` and start ``mqdaemon``:
 
 .. code:: bash
 
-    $ cd Z:
-    $ mkdir requests
-    $ chmod g+w requests
-    $ chmod g-rx requests
-    $ chmod o-rw requests
-    $ cd requests
-    $ mqdaemon --mqpath C:\\path\to\MaxQuantDir --logfile ../maxquant.log
+    cd Z:
+    mqdaemon --mqpath C:\\path\to\MaxQuantDir --logfile maxquant.log requests
 
+You can check other options with
+
+.. code:: bash
+
+   mqdaemon -h
 
 The logfile should contain the line ``INFO:root:start to listen in directory
 Z:\\requests``, without any errors after that. The daemon is now running and
 waits for requests until stopped by SIGTERM (finish all running tasks) or
 SIGINT (abort tasks and set to FAILED). It should be safe to start a new
-instance after a view seconds in both cases.
+instance after a few seconds in both cases.
 
 Call MaxQuant from linux_host
 =============================
