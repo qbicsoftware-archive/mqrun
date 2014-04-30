@@ -37,7 +37,7 @@ extensions = [
     'sphinx.ext.mathjax',
     'sphinx.ext.viewcode',
     'sphinx.ext.autosummary',
-    'sphinx.ext.napoleon',
+    'sphinxcontrib.napoleon',
 ]
 
 autosummary_generate = glob.glob("*.rst")
