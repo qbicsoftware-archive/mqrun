@@ -1,3 +1,126 @@
+"""
+========
+mqparams
+========
+
+Convert between json or yaml and MaxQuant configuration files.
+
+This module exports the following functions:
+
+xml_to_data
+    Extract parameters and paths from an MaxQuant configuration file.
+
+data_to_xml
+    Convert parameters and paths to a MaxQuant configuration file.
+
+mqrun
+    Convenients function to run MaxQuant with the specified parameters and
+    paths.
+
+Parameters files
+================
+
+Example data::
+
+    >>> import json
+    >>> from pathlib import Path
+    >>> from pprint import pprint
+
+    >>> # TODO how about some sensible parameters ;-)
+    >>> with open('paramfile.json') as f:
+    >>>    param_file = f.read()
+
+    >>> print(param_file)
+    {
+        "rawFiles": [
+            {
+                "name": "input1",
+                "params": {
+                    "defaults": "default",
+                    "variableModifications": [
+                        "Oxidation (M)",
+                    ]
+                }
+            },
+            {
+                "name": "input2",
+                "params": {
+                    "defaults" :"default",
+                }
+            }
+        "fastaFiles": {
+            "fileNames": ["fasta1"],
+            "firstSearch": ["fasta1"],
+        }
+        "globalParams": {
+            "defaults": "default",
+            "matchBetweenRuns": True
+        }
+    }
+
+    >>> # load json data
+    >>> params = json.load(param_file)
+
+Each parameter file must contain the sections "rawFiles" and "fastaFiles".
+"globalParams" and "MSMSParams" are optional.
+
+The input files (raw and fasta) are only identified by a unique name. You must
+specify the paths for each of the input files in a dictionary and pass that to
+the relevant functions.
+
+The "params" sections in "rawFiles" and the sections "globalParams" and
+"MSMSParams" have the optional argument "defaults", that specifies default
+values for the other parameters in that section.
+
+# TODO: write some of those and document how to add more
+
+``mqschema.json`` contains a json-schema for this file format along with
+descriptions for a few of the parameters.
+
+Example
+-------
+
+To convert above parameters to xml wee need a mapping to the file paths of
+the input files. Let's say they are stored in the following locations::
+
+
+    >>> paths = {
+    >>>     "input1": Path("C://data/input1.raw")
+    >>>     "input2": Path("C://data/input2.raw")
+    >>>     "fasta1": Path("C://data/fasta1.fasta")
+    >>> }
+
+Convert to xml::
+
+    >>> outdir = Path('C://output/')
+    >>> tmpdir = Path('C://tmp')
+    >>> xmltree = data_to_xml(params, paths, outdir, tmpdir)
+
+We can now write that xml file to disk and run MaxQuantCmd on it::
+
+    >>> xmltree.write(str(outdir / "params.xml"))
+
+To convert it back to our json format we do::
+
+    >>> params_, path_data = xml_to_data(xmltree)
+    >>> path_data.paths == paths
+    True
+    >>> path_data.outdir == outdir
+    True
+    >>> path_data.tmpdir == tmpdir
+    True
+
+Since the xml file does not contain information about which default values
+have been used, it specifies all values and differs from the original.
+But converting it back to xml should yield the same result as before::
+
+    >>> from sort_xml_tags import equal_sorted
+    >>> xmltree_ = data_to_xml(params_, *path_data)
+    >>> equal_sorted(xmltree_, xmltree)
+    True
+
+"""
+
 import json
 from copy import deepcopy
 import collections
@@ -5,12 +128,7 @@ from xml.etree import ElementTree
 from pathlib import PureWindowsPath, Path
 import subprocess
 import logging
-
-try:
-    from io import BytesIO
-except ImportError:
-    from StringIO import StringIO as BytesIO
-
+import numbers
 
 __all__ = ['xml_to_data', 'data_to_xml', 'mqrun', 'ExtraMQData']
 
@@ -34,13 +152,18 @@ with open('./default_values.json') as f:
 
 
 def encode(value):
-    if isinstance(value, bool):
+    """ Encode a value for use in xml """
+    # Use capital E in scientific notation
+    if isinstance(value, numbers.Number):
+        return str(value).replace('e', 'E')
+    elif isinstance(value, bool):
         return str(value).lower()
     else:
         return str(value)
 
 
 def decode(string, dtype):
+    """ Decode a value from an xml-file as dtype """
     if string is None:
         return None
     if dtype == "number":
@@ -63,6 +186,10 @@ def decode(string, dtype):
 
 
 def rec_update(d, u):
+    """ Recursivly update a nested dictionary.
+
+    See https://stackoverflow.com/questions/3232943
+    """
     assert isinstance(d, collections.Mapping)
     for k, v in u.items():
         if isinstance(v, collections.Mapping):
@@ -73,9 +200,34 @@ def rec_update(d, u):
 
 
 def data_to_xml(user_data, file_paths, fasta_paths,
-                output_dir, tmp_dir, logger=None):
+                output_dir, tmp_dir=None, logger=None):
+    """ Convert parameter set to MaxQuant xml.
+
+    Arguments
+    ---------
+    user_data : dict
+        The parameters for MaxQuant as described the module doc of mqparams.
+    file_paths : dict
+        Mapping from names in parameter set to actual file paths.
+    fasta_paths : dict     # TODO merge with file_paths
+        Mapping from names to file paths.
+    output_dir : pathlib.Path
+        Write the output files to this directory.
+    tmp_dir : pathlib.Path, optional
+        Base dir for temporary data, needs lots of space. Use system default
+        if not specified.
+    logger : logging.Logger, optional
+        Logger for the conversion process. Use
+        ``logging.getLogger('mqparams')`` if not specified
+
+    Returns
+    -------
+    params_xml : xml.lxml.ElementTree.ElementTree
+        Configuration file for use with ``MaxQuantCmd.exe``
+
+    """
     if logger is None:
-        logger = logging
+        logger = logging.getLogger('mqparams')
 
     if file_paths is None:
         file_paths = {}
@@ -102,6 +254,36 @@ def data_to_xml(user_data, file_paths, fasta_paths,
 
 
 def xml_to_data(xml_tree, logger=None):
+    """ Extract parameters and file-paths from MaxQuant configuration file
+
+    Arguments
+    ---------
+    xml_tree : xml.etree.ElementTree.Element.Tree
+        MaxQuant configuration file.
+    logger : logging.Logger, optional
+        Logger for the conversion process. Use
+        ``logging.getLogger('mqparams')`` if not specified.
+
+    Returns
+    -------
+    params : dict
+        Parameters as described in module doc
+    path_data : mqparams.ExtraMQData
+        Path information from xml file
+
+    extra_data has the following attributes:
+
+    file_paths : dict
+        Mapping from names for input files to paths
+    fasta_paths : dict  # TODO merge with file_paths
+        Same for fasta files
+    output_dir : pathlib.Path
+        Path to the output directory
+    tmp_dir : pathlib.Path
+        Path to temporary directory
+    """
+    if logger is None:
+        logger = logging.getLogger('mqparams')
     data = {}
     extra = ExtraMQData(None, None, None, None)
 
