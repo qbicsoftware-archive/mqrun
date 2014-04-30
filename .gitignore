@@ -1,0 +1,6 @@
+*~
+__pycache__
+build
+*.swp
+doc/_build
+doc/generated
