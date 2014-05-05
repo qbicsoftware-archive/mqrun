@@ -130,6 +130,7 @@ from pathlib import PureWindowsPath, Path
 import subprocess
 import logging
 import numbers
+import math
 
 __all__ = ['xml_to_data', 'data_to_xml', 'mqrun']
 
@@ -140,7 +141,7 @@ with (datadir / 'mqschema.json').open() as f:
     _schema = json.load(f)
 
 
-with (datadir / 'default_values.json').open() as f:
+with (datadir / 'defaults.json').open() as f:
     _vals = json.load(f)
     _defaults = {}
     _defaults['default'] = {}
@@ -157,10 +158,16 @@ with (datadir / 'default_values.json').open() as f:
 def encode(value):
     """ Encode a value for use in xml """
     # Use capital E in scientific notation
-    if isinstance(value, numbers.Number):
-        return str(value).replace('e', 'E')
-    elif isinstance(value, bool):
+    if isinstance(value, bool):
         return str(value).lower()
+    elif isinstance(value, numbers.Real):
+        if math.isnan(value):
+            return "NaN"
+        if value == 0:
+            return "0"
+        if int(value) == value and (-4 < math.log(abs(value), 10) < 15):
+            value = int(value)
+        return str(value).replace('e', 'E')
     else:
         return str(value)
 
@@ -320,12 +327,16 @@ def mqrun(binpath, params, raw_files, fasta_files,
         xml.write(f)
     logger.info("Run MaxQuant")
     mqcall = subprocess.Popen(
-        [str(binpath), '-mqparams', str(xml_path)],
+        [str(binpath), '-mqpar', str(xml_path)],
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
     )
     logger.info("MaxQuant running with pid " + str(mqcall.pid))
     mqcall.wait()
+    logger.info("MaxQuant stdout: " + mqcall.stdout.read().decode())
+    logger.info("MaxQuant stderr: " + mqcall.stderr.read().decode())
+    if mqcall.returncode != 0:
+        raise Exception("Unknown error while running MaxQuant")
 
 
 ExtraMQData = collections.namedtuple(
@@ -405,13 +416,21 @@ class MQParamSet(object):
             if type_ == "array":
                 item_type = schema[key]["items"]["type"]
                 if item_type == "string":
-                    strings = [s.text.strip() for s in el]
+                    if el.text is not None:
+                        strings = [s.text.strip() for s in el]
+                    else:
+                        strings = []
                     data[key] = strings
                 elif item_type == "array":
                     if not schema[key]["items"]["items"]["type"] == "string":
                         raise ValueError("can not decode element " + key)
 
-                    strings = [s.text.split(';') for s in el]
+                    strings = []
+                    for s in el:
+                        if s.text is not None:
+                            strings.append(s.text.split(';'))
+                        else:
+                            strings.append([])
                     data[key] = strings
                 else:
                     raise ValueError("only list of list of string and " +
@@ -444,7 +463,10 @@ class MQParamSet(object):
                     for value_list in value:
                         assert isinstance(value_list, collections.Sequence)
                         str_el = ElementTree.Element("string")
-                        str_el.text = ';'.join(encode(v) for v in value_list)
+                        if len(value_list) > 0:
+                            str_el.text = ';'.join(
+                                encode(v) for v in value_list
+                            )
                         data_el.append(str_el)
                 elif schema[key]["items"]["type"] == "string":
                     for val in value:
@@ -492,12 +514,11 @@ class RawFileParams(MQParamSet):
         experiments = root.find('experiments')
         file_paths = root.find('filePaths')
         fractions = root.find('fractions')
-        matching = root.find('matching')
         param_group_inds = root.find('paramGroupIndices')
         param_groups = root.find('parameterGroups')
 
-        for elems in zip(experiments, file_paths, fractions, matching):
-            exp, path, frac, match = elems
+        for elems in zip(experiments, file_paths, fractions):
+            exp, path, frac = elems
 
             file = {}
 
@@ -508,8 +529,6 @@ class RawFileParams(MQParamSet):
                 file['name'] = PureWindowsPath(file['path']).stem
             if frac.text and frac.text.strip():
                 file['fraction'] = int(frac.text.strip())
-            if match.text and match.text.strip():
-                file['matching'] = int(match.text.strip())
 
             files.append(file)
 
@@ -530,11 +549,10 @@ class RawFileParams(MQParamSet):
         experiments = ElementTree.Element('experiments')
         file_paths = ElementTree.Element('filePaths')
         fractions = ElementTree.Element('fractions')
-        matching = ElementTree.Element('matching')
         param_group_inds = ElementTree.Element('paramGroupIndices')
         param_groups = ElementTree.Element('parameterGroups')
 
-        xml_root.extend([experiments, file_paths, fractions, matching,
+        xml_root.extend([experiments, file_paths, fractions,
                          param_group_inds, param_groups])
 
         for i, file_data in enumerate(self._data):
@@ -556,11 +574,6 @@ class RawFileParams(MQParamSet):
             if 'fraction' in file_data:
                 fraction.text = encode(file_data['fraction'])
             fractions.append(fraction)
-
-            matching_ = ElementTree.Element('unsignedByte')
-            if 'matching' in file_data:
-                matching_.text = encode(file_data['matching'])
-            matching.append(matching_)
 
             param_group_ind = ElementTree.Element('int')
             param_group_ind.text = encode(i)
@@ -595,13 +608,10 @@ class MSMSParams(MQParamSet):
         for param_set in array_root:
             data = {}
             for name in schema:
-                if name in ['Tolerance', 'DeNovoTolerance']:
+                if name in ['DeNovoTolerance', 'DeisotopeTolerance',
+                            'MatchTolerance']:
                     elem = param_set.find(name)
-                    data[name] = {}
-                    value_elem = elem.find("Value")
-                    data[name]['value'] = decode(value_elem.text, "string")
-                    unit_elem = elem.find("Unit")
-                    data[name]['unit'] = decode(unit_elem.text, "string")
+                    data[name] = decode(elem.text, "number")
                 else:
                     data[name] = param_set.attrib[name]
             msms_data.append(data)
@@ -623,17 +633,11 @@ class MSMSParams(MQParamSet):
 
             assert isinstance(param_set, collections.Mapping)
             for name, value in param_set.items():
-                if name in ['Tolerance', 'DeNovoTolerance']:
+                if name in ['DeNovoTolerance', 'DeisotopeTolerance',
+                            'MatchTolerance']:
                     tol = ElementTree.Element(name)
                     param_set_el.append(tol)
-
-                    tol_val = ElementTree.Element('Value')
-                    tol_val.text = encode(value['value'])
-                    tol.append(tol_val)
-
-                    tol_unit = ElementTree.Element('Unit')
-                    tol_unit.text = encode(value['unit'])
-                    tol.append(tol_unit)
+                    tol.text = encode(value)
                 else:
                     param_set_el.attrib[name] = encode(value)
 
@@ -646,6 +650,18 @@ class GlobalParams(MQParamSet):
             _defaults['globalParams'],
             logger,
         )
+
+    def write_into_xml(self, xml_tree, ignore=[]):
+        super().write_into_xml(xml_tree, ignore)
+        params = xml_tree.getroot()
+        version = ElementTree.SubElement(params, 'maxQuantVersion')
+        version.text = "1.5.0.0"
+        name = ElementTree.SubElement(params, 'name')
+        name.text = "Session1"
+        numThreads = ElementTree.SubElement(params, 'numThreads')
+        numThreads.text = "1"
+        mail = ElementTree.SubElement(params, 'sendEmail')
+        mail.text = "false"
 
 
 class OutputParams(MQParamSet):

@@ -71,16 +71,16 @@ def parse_args():
                         default=None)
     parser.add_argument('--logfile',
                         help="global logfile for all MaxQuant runs",
-                        default='./maxquant.log',
+                        default='maxquant.log',
                         type=Path)
 
     args = parser.parse_args()
     if not args.mqpath.is_file():
-        #print("No such file: {}".format(args.mqpath), file=sys.stderr)
+        print("No such file: {}".format(args.mqpath), file=sys.stderr)
         sys.exit(1)
 
     if not args.listendir.is_dir():
-        #print("Not a directory: {}".format(args.listendir), file=sys.stderr)
+        print("Not a directory: {}".format(args.listendir), file=sys.stderr)
         sys.exit(1)
 
     return args
@@ -236,7 +236,7 @@ def worker(task, sem, timeout=None):
             try:
                 task.status('WORKING')
                 outfiles = run_maxquant(
-                    task.log, task.infiles, task.outdir, task.outdir
+                    task.log, task.infiles, task.outdir, task.outdir, None
                 )
                 task.success(outfiles)
             except Exception:
@@ -250,20 +250,26 @@ def worker(task, sem, timeout=None):
 
 
 def main():
+    print("Starting daemon...")
     args = parse_args()
+    print("Read arguments")
     logging.basicConfig(
         level=logging.DEBUG,
         filename=str(args.logfile),
     )
+    print("Logging initialized. Logfile is " + str(args.logfile))
     logging.info("starting daemon")
     logging.info("listendir is " + str(args.listendir))
     logging.info("timeout is " + str(args.timeout))
     logging.info("num_workers is " + str(args.num_workers))
     logging.info("path to maxquant is " + str(args.mqpath))
+    global MQBINPATH
+    MQBINPATH = args.mqpath
     listener = fscall.listen(
         args.listendir,
         task_re=args.task_re,
     )
+    print("Listening in dir " + str(args.listendir))
     logging.info('start to listen in directory ' + str(args.listendir))
     serve(listener, args.num_workers, args.timeout)
 
