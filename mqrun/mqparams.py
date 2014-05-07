@@ -313,11 +313,15 @@ def xml_to_data(xml_tree, logger=None):
     return data, extra
 
 
-def mqrun(binpath, params, raw_files, fasta_files,
-          outdir, tmpdir, logger=None):
+def mqrun(binpath, params, datapaths, outdir, tmpdir, logger=None):
     """  Run MaxQuant with specified parameters and paths. """
     if logger is None:
         logger = logging
+    datapaths = {k: Path(v) for k, v in datapaths.items()}
+    fasta_files = {k: str(v) for k, v in datapaths.items()
+                   if v.suffix.lower() == '.fasta'}
+    raw_files = {k: str(v) for k, v in datapaths.items()
+                 if v.suffix.lower() == '.raw'}
     outdir = Path(outdir)
     logging.info("Writing parameter file")
     xml_path = outdir / "params.xml"
@@ -331,12 +335,7 @@ def mqrun(binpath, params, raw_files, fasta_files,
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
     )
-    logger.info("MaxQuant running with pid " + str(mqcall.pid))
-    mqcall.wait()
-    logger.info("MaxQuant stdout: " + mqcall.stdout.read().decode())
-    logger.info("MaxQuant stderr: " + mqcall.stderr.read().decode())
-    if mqcall.returncode != 0:
-        raise Exception("Unknown error while running MaxQuant")
+    return mqcall
 
 
 ExtraMQData = collections.namedtuple(
