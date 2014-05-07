@@ -18,8 +18,8 @@ else:
 requirements = []
 
 if requires_pathlib:
-    requirements.append('pathlib>=1.0')
-
+    requirements.append('pathlib >= 1.0')
+print(requirements)
 
 def find_version(*file_paths):
     with codecs.open(os.path.join(here, *file_paths), 'r', 'utf-8') as f:
@@ -33,7 +33,7 @@ def find_version(*file_paths):
     raise RuntimeError("Unable to find version string.")
 
 
-with codecs.open('DESCRIPTION.rst', encoding='utf-8') as f:
+with codecs.open(os.path.join(here, 'DESCRIPTION.rst'), encoding='utf-8') as f:
     long_description = f.read()
 
 setup(
