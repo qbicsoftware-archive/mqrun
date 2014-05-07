@@ -6,15 +6,18 @@ import threading
 from datetime import datetime
 import re
 from uuid import uuid4
+import hashlib
+import os
 
 
-def listen(listen_dir, maxqueue=0, task_re=None, interval=2):
-    listen_dir = Path(listen_dir).resolve()
-    if not listen_dir.is_dir():
+def listen(listendir, maxqueue=0, task_re=None, interval=2):
+    """ Return a generator of new tasks in listendir """
+    listendir = Path(listendir).resolve()
+    if not listendir.is_dir():
         raise ValueError("Can only listen in a directory")
     while True:
-        logging.debug("Look for new tasks in dir " + str(listen_dir))
-        dirs = [dir for dir in listen_dir.iterdir() if dir.is_dir()]
+        logging.debug("Look for new tasks in dir " + str(listendir))
+        dirs = [dir for dir in listendir.iterdir() if dir.is_dir()]
         for dir in dirs:
             if task_re and not re.fullmatch(task_re, dir.name):
                 logging.debug("Skip dir {}, does not match re"
@@ -67,7 +70,9 @@ class FSRequest(object):
 
         self._infiles = list(
             p for p in dir.glob('**/*')
-            if p.is_file() and p.name not in ["START", "STARTED"]
+            if (p.is_file() and
+                p.name not in ["START", "STARTED"] and
+                p.suffix.lower() not in ['.sha', '.md5'])
         )
 
         self._prepare_logger()
@@ -85,6 +90,11 @@ class FSRequest(object):
         self._beat_file = dir / "BEAT"
         if self._beat_file.exists():
             self.log.warn("Overwrite BEAT-file")
+
+    def do_checksums(self):
+        """ Compute checksums of input files and check if possible. """
+        for file in self.infiles:
+            check_checksum(self.log, file)
 
     def _prepare_logger(self):
         logfile = self._dir / "logfile.txt"
@@ -144,3 +154,67 @@ class FSRequest(object):
     def _single_beat(self):
         with self._beat_file.open('a') as f:
             f.write(datetime.now().isoformat() + '\n')
+
+
+def checksum(file):
+    sha = hashlib.sha256()
+
+    with file.open('rb') as f:
+        while True:
+            block = f.read(sha.block_size * 1024)
+            if not block:
+                break
+            sha.update(block)
+
+    return sha.hexdigest()
+
+
+def check_checksum(logger, file):
+    logger.info("Compute checksum of " + str(file))
+    try:
+        sum = checksum(file)
+    except OSError:
+        logger.error("Error while computing checksum of " + str(file))
+        raise
+
+    logger.info("Checksum of file {} is {}".format(file, sum))
+
+    checksum_file = file.with_suffix('.sha')
+
+    try:
+        with checksum_file.open() as f:
+            lines = f.readlines()
+    except OSError:
+        logger.warn("No checksum file for " + str(file))
+        return
+
+    lines = [line for line in lines if line.strip() != ""]
+
+    if not len(lines) == 1:
+        logger.error("Invalid checksum file: " + str(checksum_file))
+        raise ValueError("Invalid checksum")
+
+    good_sum = lines[0].split()[0].strip()
+
+    if sum != good_sum:
+        logger.error(("Checksums for file {} do not match. " +
+                     "Should be {} but is {}")
+                     .format(file, good_sum, sum))
+        raise ValueError("Invalid checksum")
+
+
+def basic_file_check(log, file, basedir):
+    """ Test if file is below basedir and can be accessed. """
+    try:
+        file = file.resolve()
+    except OSError:
+        log.warn("Invalid input file " + str(file), exc_info=True)
+        return False
+    if not file.parent == basedir:
+        log.warn("Input file {} not in {}. Ignoring"
+                 .format(str(basedir), str(file)))
+        return False
+    if not os.access(str(file), os.R_OK):
+        log.warn("Can not read " + str(file))
+        return False
+    return True
