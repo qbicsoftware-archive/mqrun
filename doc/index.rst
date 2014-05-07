@@ -6,16 +6,19 @@
 Welcome to mqrun's documentation!
 =================================
 
-Contents:
+.. include:: ../DESCRIPTION.rst
+
+Contents
+--------
 
 .. toctree::
    :maxdepth: 2
 
-   readme_link
    quickstart
-   mqparams
-   mqdaemon
-   fscall
+   installation
+   param_format
+   clientrun
+   apidoc
 
 
 Indices and tables

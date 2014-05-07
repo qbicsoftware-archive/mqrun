@@ -1,4 +1,13 @@
-=====================================
+
+==========
+Quickstart
+==========
+
+Quickstart for calling MaxQuant locally
+=======================================
+
+blubb.
+
 Quickstart for cross-platform calling
 =====================================
 
@@ -60,12 +69,14 @@ You can now run MaxQuant from linux (using python):
    maxquant.wait()
    try:
        outfiles = maxquant.result()
-       print(maxquant.log)  # print the logging output of the server
    except TimeoutError:
        print("Connection lost or server overloaded")
    except Exception as e:
        print("Error executing MaxQuant: " + str(e))
    else:
        print(outfiles)
+
+   print("Logfile\n=======\n")
+   print(maxquant.log)  # print the logging output of the server
 
 The format of the parameter file is explained in :mod:`mqrun.mqparams`.
