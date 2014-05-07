@@ -105,7 +105,7 @@ class FSRequest(object):
         self._stop_beat()
 
     def success(self, message=None):
-        self._write_file("SUCCESS")
+        self._write_file("SUCCESS", message)
         self.log.info("Successfully finished task")
         self._stop_beat()
         self.status('SUCCESS')
@@ -123,7 +123,8 @@ class FSRequest(object):
     def _write_file(self, filename, message):
         try:
             with (self._dir / filename).open('w') as f:
-                f.write(message)
+                if message is not None:
+                    f.write(message)
         except (IOError, OSError) as f:
             self.log.critical("Can not write status file " + str(filename))
 
