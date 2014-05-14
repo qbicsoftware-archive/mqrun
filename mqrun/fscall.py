@@ -8,6 +8,15 @@ import re
 from uuid import uuid4
 import hashlib
 import os
+import tempfile
+import shutil
+
+
+try:
+    TimeoutError
+except:
+    class TimeoutError(OSError):
+        pass
 
 
 def listen(listendir, maxqueue=0, task_re=None, interval=2):
@@ -218,3 +227,172 @@ def basic_file_check(log, file, basedir):
         log.warn("Can not read " + str(file))
         return False
     return True
+
+
+def submit(serverdir, infiles, beat_timeout=None):
+    future = FSFuture(serverdir, infiles)
+    future._start()
+    return future
+
+
+class FSFuture:
+    def __init__(self, serverdir, infiles, beat_timeout=None, timeout=None):
+        try:
+            self._serverdir = Path(serverdir).resolve()
+        except OSError:
+            raise ValueError("invalid serverdir: " + str(serverdir))
+
+        try:
+            self._orig_infiles = [Path(file).resolve() for file in infiles]
+        except OSError:
+            raise ValueError("invalid input file")
+
+        self._uuid = str(uuid4())
+        self._create_workdir()
+        self._status = 'NOT STARTED'
+        self._worker = threading.Thread(
+            target=self._run, name="fscall_worker_" + self._uuid
+        )
+        self._finished = threading.Event()
+        self._callbacks = []
+        self._callback_lock = threading.Lock()
+        self._beat_timeout = beat_timeout if beat_timeout is not None else 30
+        self._timeout = timeout if timeout is not None else 30
+
+    def _start(self):
+        self._worker.start()
+
+    def _run(self):
+        try:
+            self._infiles = self._copy_infiles(self._orig_infiles)
+        except Exception as e:
+            self._result = None
+            self._exception = e
+            self._finished.set()
+            return
+
+        try:
+            self._start_computation()
+        except Exception as e:
+            self._result = None
+            self._exception = e
+            self._finished.set()
+            return
+
+        result, exception = self._listen_complete()
+        self._result = result
+        self._exception = exception
+        self._finished.set()
+
+    def _create_workdir(self):
+        try:
+            self._workdir = tempfile.mkdtemp(
+                self._uuid, dir=str(self._serverdir)
+            )
+        except OSError:
+            raise RuntimeError("Could not create temporary directory")
+
+    def _copy_infiles(self, infiles):
+        self._status = 'COPY FILES'
+        for file in infiles:
+            shutil.copy(str(file), str(self._workdir))
+
+    def _start_computation(self):
+        self._touch('START')
+        start_time = time.time()
+        while time.time() - start_time < self._timeout:
+            time.sleep(1)
+            if self._exists('STATUS', 'BEAT', 'STARTED'):
+                self._status = self._read('STATUS')
+                self._last_beat = self._get_beat()
+                break
+        else:
+            raise TimeoutError("Server not responding")
+
+    def _listen_complete(self):
+        try:
+            while True:
+                if not self._next_beat():
+                    raise TimeoutError("Lost heartbeat. Server down?")
+                self._status = self._read('STATUS')
+                if self._exists('FAILED'):
+                    msg = self._read('FAILED')
+                    return None, Exception(msg)
+                if self._exists('SUCCESS'):
+                    return os.path.join(self._workdir, 'output'), None
+        except Exception as e:
+            return None, e
+
+    def _touch(self, filename):
+        with open(os.path.join(self._workdir, filename), 'w'):
+            pass
+
+    def _read(self, filename):
+        with open(os.path.join(self._workdir, filename)) as f:
+            return f.read()
+
+    def _exists(self, *filenames):
+        return all(os.path.exists(os.path.join(self._workdir, name))
+                   for name in filenames)
+
+    def _get_beat(self):
+        for _ in range(10):
+            try:
+                beat = self._read('BEAT').split('\n')[-2]
+                return datetime.strptime(beat, "%Y-%m-%dT%H:%M:%S.%f")
+            except Exception:
+                time.sleep(self._beat_timeout / 3.)
+        else:
+            raise TimeoutError("Could not get beat from server")
+
+    def _next_beat(self):
+        time.sleep(self._beat_timeout)
+
+        try:
+            beat = self._get_beat()
+        except Exception:
+            return False
+
+        if not (beat - self._last_beat).total_seconds() > 0:
+            return False
+
+        self._last_beat = beat
+        return True
+
+    @property
+    def log(self):
+        return self._read('logfile.txt')
+
+    @property
+    def status(self):
+        return self._status
+
+    def done(self):
+        return self._finished.is_set()
+
+    def cancel(self):
+        raise NotImplementedError()
+
+    def cancelled(self):
+        return False
+
+    def running(self):
+        return not self._finished.is_set()
+
+    def result(self, timeout=None):
+        if not self._finished.wait(timeout=timeout):
+            raise TimeoutError()
+        if self._exception is not None:
+            raise self._exception
+        return self._result
+
+    def exception(self, timeout=None):
+        if not self._finished.wait(timeout=timeout):
+            raise TimeoutError()
+        return self._exception
+
+    def add_done_callback(self, fn):
+        def wrap_fn():
+            self._finished.wait()
+            fn(self)
+        threading.Thread(target=wrap_fn).start()

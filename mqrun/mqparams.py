@@ -555,33 +555,36 @@ class RawFileParams(MQParamSet):
                          param_group_inds, param_groups])
 
         for i, file_data in enumerate(self._data):
-            experiment = ElementTree.Element('string')
-            if 'experiment' in file_data:
-                experiment.text = encode(file_data['experiment'])
-            experiments.append(experiment)
+            files = file_data['files']
+            params = file_data['params']
+            for file in files:
+                experiment = ElementTree.Element('string')
+                if 'experiment' in file:
+                    experiment.text = encode(file['experiment'])
+                experiments.append(experiment)
 
-            file_path = ElementTree.Element('string')
-            if file_data['name'] in self.extra_data.file_paths:
-                file_path.text = encode(
-                    self.extra_data.file_paths[file_data['name']]
-                )
-            else:
-                file_path.text = encode(file_data['path'])
-            file_paths.append(file_path)
+                file_path = ElementTree.Element('string')
+                if file['name'] in self.extra_data.file_paths:
+                    file_path.text = encode(
+                        self.extra_data.file_paths[file['name']]
+                    )
+                else:
+                    file_path.text = encode(file['path'])
+                file_paths.append(file_path)
 
-            fraction = ElementTree.Element('short')
-            if 'fraction' in file_data:
-                fraction.text = encode(file_data['fraction'])
-            fractions.append(fraction)
+                fraction = ElementTree.Element('short')
+                if 'fraction' in file:
+                    fraction.text = encode(file['fraction'])
+                fractions.append(fraction)
 
-            param_group_ind = ElementTree.Element('int')
-            param_group_ind.text = encode(i)
-            param_group_inds.append(param_group_ind)
+                param_group_ind = ElementTree.Element('int')
+                param_group_ind.text = encode(i)
+                param_group_inds.append(param_group_ind)
 
             param_group = ElementTree.Element('parameterGroup')
             params_schema = self._schema['items']['properties']['params']
             self._simple_write_into_xml(
-                param_group, file_data['params'], params_schema
+                param_group, params, params_schema
             )
             param_groups.append(param_group)
 

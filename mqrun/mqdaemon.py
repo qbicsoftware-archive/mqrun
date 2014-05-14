@@ -151,9 +151,10 @@ def parse_param_file(log, param_file):
 
 
 def validate_params(log, params, datafiles):
-    raw_names = [raw['name'] for raw in params['rawFiles']]
-    if len(set(raw_names)) != len(raw_names):
-        raise ValueError("Invalid params. rawFile names not unique.")
+    pass
+    #raw_names = [raw['name'] for raw in params['rawFiles']]
+    #if len(set(raw_names)) != len(raw_names):
+    #    raise ValueError("Invalid params. rawFile names not unique.")
     #fasta_names = params['fastaFiles']['fileNames']
     #fasta_names += params['fastaFiles']
 
@@ -235,18 +236,16 @@ class MQJob(threading.Thread):
                 mqcall.kill()
                 log.error("MaxQuant process has been killed")
                 outs, errs = mqcall.communicate()
-                log.info("MaxQuant stdout: " + str(outs))
-                log.info("MaxQuant stderr: " + str(errs))
+                log.info("MaxQuant stdout: " + outs.decode())
+                log.info("MaxQuant stderr: " + errs.decode())
                 raise RuntimeError("MaxQuant timeout")
+            log.info("MaxQuant stdout: " + outs.decode())
+            log.info("MaxQuant stderr: " + errs.decode())
             ret = mqcall.returncode
-            if not ret:
+            if ret != 0:
                 log.error("MaxQuant finished with error code " + str(ret))
                 raise RuntimeError("MaxQuant error " + str(ret))
             log.info("MaxQuant finished successfully")
-            log.info("MaxQuant stdout: " + outs)
-            log.info("MaxQuant stderr: " + errs)
-            if mqcall.returncode != 0:
-                raise Exception("Unknown error while running MaxQuant")
 
     def run(self):
         try:
@@ -268,7 +267,7 @@ class MQJob(threading.Thread):
 
         try:
             self.task.status('PREPARING FILES')
-            self.task.do_checksums()
+            #self.task.do_checksums()
             params, datafiles = self._process_params()
             log.info("File preparation finished")
         except Exception as e:
@@ -343,7 +342,7 @@ def main():
     args = parse_args()
     print("Starting daemon...")
     logging.basicConfig(
-        level=logging.DEBUG,
+        level=logging.INFO,
         filename=str(args.logfile),
     )
     print("Logging initialized. Logfile is " + str(args.logfile))
