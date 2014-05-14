@@ -3,13 +3,13 @@
 Quickstart
 ==========
 
-Quickstart for calling MaxQuant locally
-=======================================
+Calling MaxQuant locally
+========================
 
 blubb.
 
-Quickstart for cross-platform calling
-=====================================
+Calling MaxQuant on a dedicated Windows machine
+===============================================
 
 Suppose the two hosts ``win_host`` and ``linux_host`` are in a network and we
 would like to call MaxQuant on the ``win_host``, but control the process and
@@ -64,7 +64,7 @@ You can now run MaxQuant from linux (using python):
        "fasta_file": "/path/to/fasta/file",
    }
 
-   maxquant = mqclient.mqrun('/mnt/win_share/requests', params, path_data)
+   maxquant = mqclient.mqrun(params, path_data, share='/mnt/win_share_requests')
 
    maxquant.wait()
    try:
@@ -80,3 +80,31 @@ You can now run MaxQuant from linux (using python):
    print(maxquant.log)  # print the logging output of the server
 
 The format of the parameter file is explained in :mod:`mqrun.mqparams`.
+
+
+Use MaxQuant on an virtual machine
+==================================
+
+
+Requirements:
+
+- qemu with kvm enabled on the linux machine
+
+- guestfs + python wrappers on linux
+
+- A windows virtual machine image
+
+
+Configure the windows machine
+-----------------------------
+
+Start the windows machine with qemu and the software image at (TODO)
+
+.. code:: bash
+
+   qemu -hda winvm.img -boot c -hdb mqrun_image.img -enable-kvm -m 1024
+
+and execute the file ``install.bat`` on ``d:\\``.
+
+Execute MaxQuant exactly as in the example above, but replace the keyword
+argument ``share`` in the ``mqclient.mqrun`` call by ``img=path/to/win/image``.

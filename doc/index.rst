@@ -17,7 +17,6 @@ Contents
    quickstart
    installation
    param_format
-   clientrun
    apidoc
 
 
