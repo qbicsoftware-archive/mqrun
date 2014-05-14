@@ -4,3 +4,9 @@ build
 *.swp
 doc/_build
 doc/generated
+*.pyc
+.tox
+cover
+dist
+.coverage
+mqrun.egg-info
