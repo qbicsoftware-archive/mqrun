@@ -9,7 +9,7 @@ MaxQuant is a quantitative proteomics software package that unfortunatly
 only runs on Windows and is designed for use with a graphical user interface.
 Both make it hard to integrate into a larger workflow.
 
-mqrun consists of four parts, that try to mitigate those problems:
+mqrun consists of three parts, that try to mitigate those problems:
 
 :mod:`mqrun.mqparams`
     This is a small library that converts user supplied json-parameter files
@@ -30,26 +30,17 @@ mqrun consists of four parts, that try to mitigate those problems:
     machine and handles requests for MaxQuant. It includes basic load
     balancing. See ``mqdaemon -h`` for options.
 
-:mod:`mqrun.mqclient`
-    ``mqclient`` is a small client library that wraps the ``fscall`` routines
-    to provide a convenient interface for programs running on linux (or
-    windows) machines, that want to run MaxQuant.
-
 
 Requirements
 ============
 
-``mqdaemon`` requires python3.4 and optionally ``PyYAML``. An older python3
-version should be fine, if ``pathlib``, ``mock`` and ``argparse`` are
-installed. ``mqrun`` is only compatible with MaxQuant 1.4.1.2
+``mqdaemon`` is compatible with >= python3.3 and needs MaxQuant 1.5.0.0
 
-The code for the client runs fine on python2.7, and requires ``pathlib``.
+The code for the client runs fine on python2.7.
 
-Windows installation instructions
-=================================
 
-Linux installation instructions
-===============================
+Installation instructions
+=========================
 
 Open a terminal as root and execute
 
@@ -86,23 +77,12 @@ lines of this:
     writeable = yes
     public = no
 
-Change the permissions in the share:
+Create a directory for the requests
 
 .. code:: bash
 
     cd /mnt/win_share
     mkdir requests
-    chmod g+w requests
-    chmod g-rx requests
-    chmod o-rw requests
-
-and set permissions for the global log file:
-
-.. code:: bash
-
-    touch maxquant.log
-    chmod g-rw
-    chmod o-rw
 
 Then add a Samba user
 
@@ -118,10 +98,6 @@ smbd`` mount the Samba share on the windows machine with ``Add network drive``
 (TODO?) and the credentials ``linux_user`` and ``linux_user_passwd``. It should
 now be possible to exchange files between ``win_host`` and ``linux_host``.
 
-.. todo::
-
-   Explain the different users involved
-
 Start mqdaemon
 --------------
 
@@ -129,7 +105,7 @@ Open a command line on ``win_host`` and start ``mqdaemon``:
 
 .. code:: bash
 
-    cd Z:
+    Z:
     mqdaemon --mqpath C:\\path\to\MaxQuantDir --logfile maxquant.log requests
 
 You can check other options with
@@ -141,8 +117,8 @@ You can check other options with
 The logfile should contain the line ``INFO:root:start to listen in directory
 Z:\\requests``, without any errors after that. The daemon is now running and
 waits for requests until stopped by SIGTERM (finish all running tasks) or
-SIGINT (abort tasks and set to FAILED). It should be safe to start a new
-instance after a few seconds in both cases.
+SIGINT (abort tasks and set to FAILED) (TODO: not properly implemented).
+It should be safe to start a new instance after a few seconds in both cases.
 
 Call MaxQuant from linux_host
 =============================
@@ -152,7 +128,7 @@ Users who want to run MaxQuant need to have write permission in
 of that directory (execute and read bit not set), or they can access the data
 of different users. ``mqclient`` will create directory names inside
 ``requests``, that are hard to guess (TODO check this!!) to protect the data
-from unpriviliged access. (Possible timing attack??)
+from unpriviliged access.
 
 Run MaxQuant like this:
 
@@ -160,28 +136,30 @@ Run MaxQuant like this:
 
     import mqclient
     import time
+    import json
 
     # specify the parameters for MaxQuant
     params = {    # TODO how about something sensible ;-)
+        # each elemet corresponds to a "parameter group" in MaxQuant
         "rawFiles": [
             {
-                "name": "input1",
+                "files": [
+                    {
+                        "name": "input1",
+                        "fraction": 1
+                    }
+                ],
                 "params": {
                     "defaults": "default",
                     "variableModifications": [
                         "Oxidation (M)",
                     ]
                 }
-            },
-            {
-                "name": "input2",
-                "params": {
-                    "defaults" :"default",
-                }
             }
+        ],
         "fastaFiles": {
             "fileNames": ["fasta1"],
-            "firstSearch": ["fasta1"],
+            "firstSearch": [],
         }
         "globalParams": {
             "defaults": "default",
@@ -189,19 +167,19 @@ Run MaxQuant like this:
         }
     }
 
-    # Set paths to input files
-    fasta_files = {
-        "fasta1": "path/to/fasta1"
-    }
+    with open("path/to/params.json", 'w') as f:
+        json.dump(params, f)
 
-    raw_files = {
-        "input1": "/path/to/input1",
-        "input2": "/path/to/input2",
+    # paths to the input and parameter files
+    file_paths = [
+        "path/to/fasta1.fasta",
+        "path/to/input1.raw",
+        "path/to/params.json",
     }
 
     # Run MaxQuant (future is similar to concurrent.futures.Future)
-    future = mqclient.mqrun(
-        "/mnt/win_share/requests", params, fasta_files, raw_files
+    future = fscall.submit(
+        "/mnt/win_share/requests", file_paths
     )
     try:
         while not future.done():
