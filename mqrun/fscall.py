@@ -230,12 +230,33 @@ def basic_file_check(log, file, basedir):
 
 
 def submit(serverdir, infiles, beat_timeout=None):
+    """ Submit a new job for a fscall server listening in ``serverdir``.
+
+    Create a new directory in ``serverdir`` and copy the input files
+    inside. Wait at most ``beat_timeout`` seconds for an answer of the
+    server. Fail if no beat is registered for more than ``beat_timeout``
+    seconds. ``submit`` is non-blocking, it returns a ``fscall.Future``
+    object, that implements the interface of ``concurrent.futures.Future``.
+    """
+
     future = FSFuture(serverdir, infiles)
     future._start()
     return future
 
 
 class FSFuture:
+    """
+    ``FSFuture`` encapsulates a background process that is executed on
+    a remote server.
+
+    It implements the ``concurrent.futures.Future`` interface, but does
+    not support cancelling. Additional attributes:
+
+    status: str
+        The status of the task. Could be "COPYING" or "RUNNING"
+    log: str
+        The logfile of the remote process so far.
+    """
     def __init__(self, serverdir, infiles, beat_timeout=None, timeout=None):
         try:
             self._serverdir = Path(serverdir).resolve()
