@@ -35,7 +35,16 @@ Example data::
     {
         "rawFiles": [
             {
-                "name": "input1",
+                "files": [
+                    {
+                        "name": "input1",
+                        "fraction": 1,
+                    },
+                    {
+                        "name": "input2",
+                        "fraction": 2,
+                    },
+                ],
                 "params": {
                     "defaults": "default",
                     "variableModifications": [
@@ -44,7 +53,12 @@ Example data::
                 }
             },
             {
-                "name": "input2",
+                "files": [
+                    {
+                        "name": "input2",
+                        "fraction": 3,
+                    }
+                ],
                 "params": {
                     "defaults" :"default",
                 }
@@ -507,17 +521,18 @@ class RawFileParams(MQParamSet):
 
     def from_xml(self, xml_tree):
         root = xml_tree.getroot()
-
-        files = []
-
         experiments = root.find('experiments')
         file_paths = root.find('filePaths')
         fractions = root.find('fractions')
         param_group_inds = root.find('paramGroupIndices')
         param_groups = root.find('parameterGroups')
 
-        for elems in zip(experiments, file_paths, fractions):
-            exp, path, frac = elems
+        # maps file names to file paths, belongs to self.extra_data
+        paths_dict = {}
+
+        files = []
+        for elems in zip(experiments, file_paths, fractions, param_group_inds):
+            exp, path, frac, grp_ind = elems
 
             file = {}
 
@@ -526,20 +541,46 @@ class RawFileParams(MQParamSet):
             if path.text and path.text.strip():
                 file['path'] = path.text.strip()
                 file['name'] = PureWindowsPath(file['path']).stem
+                paths_dict[file['name']] = file['path']
             if frac.text and frac.text.strip():
                 file['fraction'] = int(frac.text.strip())
+            file['grp_ind'] = int(grp_ind.text.strip())
 
             files.append(file)
 
+        extra_data = ExtraMQData(paths_dict, None, None, None)
+        self.update_data(extra_data=extra_data)
+
+        # data is list of parameter groups
+        # each parameter group contains a list of files and a set of parameters
+        data = []
+
+        # read schema for group specific parameters
         params_schema = self._schema['items']['properties']['params']
-        for i, param_group in enumerate(param_group_inds):
-            index = int(param_group.text.strip())
-            params_xml = param_groups[index]
-            files[i]['params'] = self._simple_read_from_xml(
+
+        # group files by parameter group index
+        key_func = lambda file: file['grp_ind']
+        files.sort(key=key_func)
+        for grp_ind, files in itertools.groupby(files, key=key_func):
+            param_xml = param_groups[grp_ind]
+
+            file_group = {}
+            data.append(file_group)
+
+            # read the group specific parameter from xml
+            file_group['params'] = self._simple_read_from_xml(
                 params_xml, params_schema
             )
 
-        self.update_data(files)
+            file_group['files'] = []
+            for file in files:
+                file_group.append({
+                    'name': file['name']
+                    'experiment': file['experiment']
+                    'fraction': file['fraction']
+                })
+
+        self.update_data(user_data=data)
 
     def write_into_xml(self, xml_tree):
         assert isinstance(self._data, list)
