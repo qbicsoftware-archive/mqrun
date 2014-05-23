@@ -145,6 +145,7 @@ import subprocess
 import logging
 import numbers
 import math
+import itertools
 
 __all__ = ['xml_to_data', 'data_to_xml', 'mqrun']
 
@@ -562,7 +563,7 @@ class RawFileParams(MQParamSet):
         key_func = lambda file: file['grp_ind']
         files.sort(key=key_func)
         for grp_ind, files in itertools.groupby(files, key=key_func):
-            param_xml = param_groups[grp_ind]
+            params_xml = param_groups[grp_ind]
 
             file_group = {}
             data.append(file_group)
@@ -574,11 +575,11 @@ class RawFileParams(MQParamSet):
 
             file_group['files'] = []
             for file in files:
-                file_group.append({
-                    'name': file['name']
-                    'experiment': file['experiment']
-                    'fraction': file['fraction']
-                })
+                if 'path' in file:
+                    del file['path']
+                del file['grp_ind']
+
+                file_group['files'].append(file)
 
         self.update_data(user_data=data)
 
@@ -713,7 +714,7 @@ class OutputParams(MQParamSet):
 
     def __init__(self, logger=None):
         super().__init__(
-            _schema['properties']['outputOptions'],
+            None,
             None,
             logger,
         )
