@@ -793,23 +793,44 @@
             "items": {
                 "id": "#0",
                 "properties": {
-                    "fraction": {
-                        "id": "#fraction",
-                        "description": "",
-                        "title": "fraction",
-                        "required": false,
-                        "type": "integer",
+                    "files": {
+                        "id": "#files",
+                        "title": "files",
+                        "required": true,
+                        "type": "array",
                         "minimum": 0,
-                        "name": ""
-                    },
-                    "experiment": {
-                        "id": "#experiment",
-                        "minLength": 0,
-                        "description": "",
-                        "title": "experiment",
-                        "required": false,
-                        "type": "string",
-                        "name": ""
+                        "items": {
+                            "id": "rawFile",
+                            "titile": "raw file",
+                            "type": "object",
+                            "properties": {
+                                "fraction": {
+                                    "id": "#fraction",
+                                    "description": "",
+                                    "title": "fraction",
+                                    "required": false,
+                                    "type": "integer",
+                                    "minimum": 0,
+                                    "name": ""
+                                },
+                                "experiment": {
+                                    "id": "#experiment",
+                                    "minLength": 0,
+                                    "description": "",
+                                    "title": "experiment",
+                                    "required": false,
+                                    "type": "string",
+                                    "name": ""
+                                },
+                                "name": {
+                                    "id": "#name",
+                                    "minLength": 1,
+                                    "required": true,
+                                    "title": "name",
+                                    "type": "string"
+                                }
+                            }
+                        }
                     },
                     "params": {
                         "id": "#params",
@@ -817,78 +838,78 @@
                             "defaults": {
                                 "id": "#rawFileDefaults"
                             },
-			    "advancedPeakSplitting": {
-				"id": "#advancedPeakSplitting",
-				"description": "",
-				"title": "advancedPeakSplitting",
-				"required": false,
-				"type": "boolean",
-				"name": ""
-			    },
-			    "centroidMatchTol": {
-				"id": "#centroidMatchTol",
-				"description": "",
-				"title": "centroidMatchTol",
-				"required": false,
-				"type": "number",
-				"name": ""
-			    },
-			    "centroidMatchTolInPpm": {
-				"id": "#centroidMatchTolInPpm",
-				"description": "",
-				"title": "centroidMatchTolInPpm",
-				"required": false,
-				"type": "boolean",
-				"name": ""
-			    },
-			    "intensityDependentCalibration": {
-				"id": "#intensityDependentCalibration",
-				"description": "",
-				"title": "intensityDependentCalibration",
-				"required": false,
-				"type": "boolean",
-				"name": ""
-			    },
-			    "intensityDetermination": {
-				"id": "#intensityDetermination",
-				"description": "",
-				"title": "intensityDetermination",
-				"required": false,
-				"type": "integer",
-				"name": ""
-			    },
-			    "intensityThreshold": {
-				"id": "#intensityThreshold",
-				"description": "",
-				"title": "intensityThreshold",
-				"required": false,
-				"type": "integer",
-				"name": ""
-			    },
-			    "isotopeMatchTol": {
-				"id": "#isotopeMatchTol",
-				"description": "",
-				"title": "isotopeMatchTol",
-				"required": false,
-				"type": "integer",
-				"name": ""
-			    },
-			    "isotopeMatchTolInPpm": {
-				"id": "#isotopeMatchTolInPpm",
-				"description": "",
-				"title": "isotopeMatchTolInPpm",
-				"required": false,
-				"type": "boolean",
-				"name": ""
-			    },
-			    "isotopeTimeCorrelation": {
-				"id": "#isotopeTimeCorrelation",
-				"description": "",
-				"title": "isotopeTimeCorrelation",
-				"required": false,
-				"type": "number",
-				"name": ""
-			    },
+                            "advancedPeakSplitting": {
+                                "id": "#advancedPeakSplitting",
+                                "description": "",
+                                "title": "advancedPeakSplitting",
+                                "required": false,
+                                "type": "boolean",
+                                "name": ""
+                            },
+                                "centroidMatchTol": {
+                                "id": "#centroidMatchTol",
+                                "description": "",
+                                "title": "centroidMatchTol",
+                                "required": false,
+                                "type": "number",
+                                "name": ""
+                            },
+                                "centroidMatchTolInPpm": {
+                                "id": "#centroidMatchTolInPpm",
+                                "description": "",
+                                "title": "centroidMatchTolInPpm",
+                                "required": false,
+                                "type": "boolean",
+                                "name": ""
+                            },
+                            "intensityDependentCalibration": {
+                            "id": "#intensityDependentCalibration",
+                            "description": "",
+                            "title": "intensityDependentCalibration",
+                            "required": false,
+                            "type": "boolean",
+                            "name": ""
+                            },
+                            "intensityDetermination": {
+                            "id": "#intensityDetermination",
+                            "description": "",
+                            "title": "intensityDetermination",
+                            "required": false,
+                            "type": "integer",
+                            "name": ""
+                            },
+                            "intensityThreshold": {
+                            "id": "#intensityThreshold",
+                            "description": "",
+                            "title": "intensityThreshold",
+                            "required": false,
+                            "type": "integer",
+                            "name": ""
+                            },
+                            "isotopeMatchTol": {
+                            "id": "#isotopeMatchTol",
+                            "description": "",
+                            "title": "isotopeMatchTol",
+                            "required": false,
+                            "type": "integer",
+                            "name": ""
+                            },
+                            "isotopeMatchTolInPpm": {
+                            "id": "#isotopeMatchTolInPpm",
+                            "description": "",
+                            "title": "isotopeMatchTolInPpm",
+                            "required": false,
+                            "type": "boolean",
+                            "name": ""
+                            },
+                            "isotopeTimeCorrelation": {
+                            "id": "#isotopeTimeCorrelation",
+                            "description": "",
+                            "title": "isotopeTimeCorrelation",
+                            "required": false,
+                            "type": "number",
+                            "name": ""
+                            },
                             "minPeakLen": {
                                 "id": "#minPeakLen",
                                 "description": "",
@@ -898,14 +919,14 @@
                                 "minimum": 0,
                                 "name": ""
                             },
-			    "matchType": {
-				"id": "#matchType",
-				"description": "",
-				"title": "matchType",
-				"required": false,
-				"type": "string",
-				"name": ""
-			    },
+                            "matchType": {
+                            "id": "#matchType",
+                            "description": "",
+                            "title": "matchType",
+                            "required": false,
+                            "type": "string",
+                            "name": ""
+                            },
                             "minTime": {
                                 "id": "#minTime",
                                 "description": "",
@@ -922,70 +943,70 @@
                                 "type": "number",
                                 "name": ""
                             },
-			    "minScoreForCalibration": {
-				"id": "#minScoreForCalibration",
-				"description": "",
-				"title": "minScoreForCalibration",
-				"required": false,
-				"type": "integer",
-				"name": ""
-			    },
-			    "recalibrationInPpm": {
-				"id": "#recalibrationInPpm",
-				"description": "",
-				"title": "recalibrationInPpm",
-				"required": false,
-				"type": "boolean",
-				"name": ""
-			    },
-			    "searchTolInPpm": {
-				"id": "#searchTolInPpm",
-				"description": "",
-				"title": "searchTolInPpm",
-				"required": false,
-				"type": "boolean",
-				"name": ""
-			    },
-			    "slicePeaks": {
-				"id": "#slicePeaks",
-				"description": "",
-				"title": "slicePeaks",
-				"required": false,
-				"type": "boolean",
-				"name": ""
-			    },
-			    "theorIsotopeCorrelation": {
-				"id": "#theorIsotopeCorrelation",
-				"description": "",
-				"title": "theorIsotopeCorrelation",
-				"required": false,
-				"type": "number",
-				"name": ""
-			    },
-			    "useMs1Centroids": {
-				"id": "#useMs1Centroids",
-				"description": "",
-				"title": "useMs1Centroids",
-				"required": false,
-				"type": "boolean",
-				"name": ""
-			    },
-			    "useMs2Centroids": {
-				"id": "#useMs2Centroids",
-				"description": "",
-				"title": "useMs2Centroids",
-				"required": false,
-				"type": "boolean",
-				"name": ""
-			    },
-			    "valleyFactor": {
-				"id": "#valleyFactor",
-				"description": "",
-				"title": "valleyFactor",
-				"required": false,
-				"type": "number",
-				"name": ""
-			    },
+                            "minScoreForCalibration": {
+                            "id": "#minScoreForCalibration",
+                            "description": "",
+                            "title": "minScoreForCalibration",
+                            "required": false,
+                            "type": "integer",
+                            "name": ""
+                            },
+                            "recalibrationInPpm": {
+                            "id": "#recalibrationInPpm",
+                            "description": "",
+                            "title": "recalibrationInPpm",
+                            "required": false,
+                            "type": "boolean",
+                            "name": ""
+                            },
+                            "searchTolInPpm": {
+                            "id": "#searchTolInPpm",
+                            "description": "",
+                            "title": "searchTolInPpm",
+                            "required": false,
+                            "type": "boolean",
+                            "name": ""
+                            },
+                            "slicePeaks": {
+                            "id": "#slicePeaks",
+                            "description": "",
+                            "title": "slicePeaks",
+                            "required": false,
+                            "type": "boolean",
+                            "name": ""
+                            },
+                            "theorIsotopeCorrelation": {
+                            "id": "#theorIsotopeCorrelation",
+                            "description": "",
+                            "title": "theorIsotopeCorrelation",
+                            "required": false,
+                            "type": "number",
+                            "name": ""
+                            },
+                            "useMs1Centroids": {
+                            "id": "#useMs1Centroids",
+                            "description": "",
+                            "title": "useMs1Centroids",
+                            "required": false,
+                            "type": "boolean",
+                            "name": ""
+                            },
+                            "useMs2Centroids": {
+                            "id": "#useMs2Centroids",
+                            "description": "",
+                            "title": "useMs2Centroids",
+                            "required": false,
+                            "type": "boolean",
+                            "name": ""
+                            },
+                            "valleyFactor": {
+                            "id": "#valleyFactor",
+                            "description": "",
+                            "title": "valleyFactor",
+                            "required": false,
+                            "type": "number",
+                            "name": ""
+                            },
                             "isobaricLabels": {
                                 "uniqueItems": false,
                                 "id": "#isobaricLabels",
@@ -1341,46 +1362,9 @@
                                 "type": "boolean",
                                 "name": ""
                             }
-                        },
-                        "description": "",
-                        "title": "params",
-                        "required": false,
-                        "type": "object",
-                        "name": ""
-                    },
-                    "path": {
-                        "id": "#path",
-                        "minLength": 0,
-                        "description": "",
-                        "title": "path",
-                        "required": false,
-                        "type": "string",
-                        "name": ""
-                    },
-                    "matching": {
-                        "id": "#matching",
-                        "description": "",
-                        "title": "matching",
-                        "required": false,
-                        "type": "integer",
-                        "minimum": 0,
-                        "name": ""
-                    },
-                    "name": {
-                        "id": "#name",
-                        "minLength": 0,
-                        "description": "",
-                        "title": "name",
-                        "required": false,
-                        "type": "string",
-                        "name": ""
+                        }
                     }
-                },
-                "description": "",
-                "title": "items",
-                "required": false,
-                "type": "object",
-                "name": ""
+                }
             },
             "description": "",
             "title": "rawFiles",
