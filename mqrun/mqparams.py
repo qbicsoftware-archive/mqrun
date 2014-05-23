@@ -35,7 +35,16 @@ Example data::
     {
         "rawFiles": [
             {
-                "name": "input1",
+                "files": [
+                    {
+                        "name": "input1",
+                        "fraction": 1,
+                    },
+                    {
+                        "name": "input2",
+                        "fraction": 2,
+                    },
+                ],
                 "params": {
                     "defaults": "default",
                     "variableModifications": [
@@ -44,7 +53,12 @@ Example data::
                 }
             },
             {
-                "name": "input2",
+                "files": [
+                    {
+                        "name": "input2",
+                        "fraction": 3,
+                    }
+                ],
                 "params": {
                     "defaults" :"default",
                 }
@@ -597,6 +611,7 @@ class MSMSParams(MQParamSet):
             _defaults['MSMSParams'],
             logger,
         )
+        self.update_data(user_data={'defaults': 'default'})
 
     def from_xml(self, xml_tree):
         ignore = {'#msmsParamsArray'}
@@ -652,6 +667,7 @@ class GlobalParams(MQParamSet):
             _defaults['globalParams'],
             logger,
         )
+        self.update_data(user_data={'defaults': 'default'})
 
     def write_into_xml(self, xml_tree, ignore=[]):
         super().write_into_xml(xml_tree, ignore)
@@ -706,6 +722,7 @@ class TopLevelParams(MQParamSet):
             _defaults['topLevelParams'],
             logger,
         )
+        self.update_data(user_data={'defaults': 'default'})
 
     def from_xml(self, xml_tree, ignore=[]):
         assert ignore == []
