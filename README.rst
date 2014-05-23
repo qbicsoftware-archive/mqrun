@@ -2,6 +2,8 @@
 mqrun: Automate MaxQuant
 ========================
 
+See `documentation <mqrun.rtfd.org>`_
+
 Overview
 ========
 
