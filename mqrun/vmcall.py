@@ -128,7 +128,7 @@ def create_overlay(dest_path, base_image):
 
 
 class VMTask:
-    def __init__(self, qemu_bin, root_base_image, workdir):
+    def __init__(self, qemu_bin, root_base_image, workdir, keep_images=False):
         """ Configure and run a virtual machine.
 
         Parameters
@@ -140,6 +140,8 @@ class VMTask:
             Path to a read-only image of a boot partitition
         workdir: str
             Directory where to store temporary images and temporary files
+        keep_images: bool
+            Do not delete temporary images after shutdown
 
         Examples
         --------
@@ -147,8 +149,7 @@ class VMTask:
         >>>     vm.add_diskimg('input.raw', ['input.raw'])
         >>>     vm.add_option('cpu', 'host')
         >>>     avm.add_option('smp', sockets=1, cores=10, threads=2)
-        >>>     vm.start()
-        >>>     vm.join()
+        >>>     vm.run()
         """
         if not os.path.isdir(workdir):
             raise ValueError("Workdir does not exist: %s" % workdir)
@@ -162,8 +163,10 @@ class VMTask:
         self._qemu_bin = qemu_bin
         self._stopped = False
 
-    def add_diskimg(self, name, path, files, type='ntfs', format='raw',
-                    size='+500M', **options):
+        self._keep_images = keep_images
+
+    def add_diskimg(self, name, path, data_files=None, data_path=None,
+                    *args, type='ntfs', format='raw', size='+500M', **options):
         """ Create a new disk image and attach it to the VM.
 
         TODO: change name to path
@@ -174,8 +177,11 @@ class VMTask:
             Name of the disk image
         path: str
             Where to store the image
-        files: list of file paths
+        data_files: list of file paths
             The list of files to copy to the disk image
+        data_path: str
+            Path to a directory. The content will be copied to the disk.
+            You can use only one of `data_path` and `data_files`.
         type: str
             Filesystem format
         format: ['raw', 'qcow2']
@@ -186,6 +192,10 @@ class VMTask:
             List of options that are passed to qemu about disk. See section
             `drive` in qemu documentation.
         """
+        if data_files is not None and data_path is not None:
+            raise ValueError(
+                "You can use only one of 'data_path' and 'data_files'"
+            )
 
         # the root image is the first one and is not in this list
         if len(self._images) > 3:
@@ -194,20 +204,26 @@ class VMTask:
         if name in self._images:
             raise ValueError("Name of image is not unique: %s" % name)
 
-        datadir = tempfile.mkdtemp()
-        try:
-            for file in files:
-                shutil.copy(file, pjoin(datadir, os.path.split(file)[1]))
+        if data_path is not None:
+            image = prepare_data_image(path, data_path, type, format, size)
+        else:
+            if data_files is None:
+                data_files = []
 
-            image = prepare_data_image(path, datadir, type, format, size)
-        finally:
-            shutil.rmtree(datadir)
+            datadir = tempfile.mkdtemp()
+            try:
+                for file in data_files:
+                    shutil.copy(file, pjoin(datadir, os.path.split(file)[1]))
+
+                image = prepare_data_image(path, datadir, type, format, size)
+            finally:
+                shutil.rmtree(datadir)
 
         if options is None:
             options = {}
 
         options['file'] = image
-        self._options.append(('drive', [], options))
+        self._options.append(('drive', args, options))
         self._images[name] = image
 
     def add_option(self, name, *args, **kwargs):
@@ -235,6 +251,10 @@ class VMTask:
         extract_from_image(self._images[image], dest, path)
 
     def run(self):
+        """ Start the virtual machine and wait for it to power down.
+
+        If the VMTask._stopped flag is set, the vm will be killed.
+        """
         cmd = [self._qemu_bin]
         for name, args, kwargs in self._options:
             cmd.append('-' + name)
@@ -242,15 +262,17 @@ class VMTask:
             # 'if' as 'if_'. Otherwise this would be a syntax error
             args = ','.join([s.rstrip('_') for s in args])
             for key, val in kwargs.items():
-                left = str(key).rstrip('_')
+                left = str(key).rstrip('_').replace('_', '-')
                 right = str(val).rstrip('_')
                 if args:
                     args = ','.join([args, '='.join([left, right])])
                 else:
                     args = '='.join([left, right])
-            cmd.append(args)
+            if args != '':
+                cmd.append(args)
 
         cmd = [item.rstrip('_') for item in cmd]
+        print(cmd)
 
         self._vm_popen = subprocess.Popen(
             cmd, stdin=subprocess.PIPE, stderr=subprocess.PIPE
@@ -279,9 +301,10 @@ class VMTask:
         self._stopped = True
         if hasattr(self, '_vm_popen'):
             self._vm_popen.wait()
-        for path in self._images.values():
-            os.unlink(path)
-        os.unlink(self._root_image)
+        if not self._keep_images:
+            for path in self._images.values():
+                os.unlink(path)
+            os.unlink(self._root_image)
 
     def __enter__(self):
         return self
@@ -324,15 +347,33 @@ def maxquant_vm(qemu, infiles, windows_image, **kwargs):
         'output_size': '50G',
         'display': False,
         'mem': '2G',
+        'keep_images': False,
     }
     args.update(kwargs)
 
-    vm = VMTask(qemu, windows_image, '.')
+    vm = VMTask(qemu, windows_image, '.', args['keep_images'])
     try:
-        vm.add_diskimg('input', 'input.img', infiles, size=args['input_size'],
-                       if_='virtio', aio='threads', cache='none')
+        try:
+            data_dir = tempfile.mkdtemp()
+            tasks = pjoin(data_dir, 'tasks')
+            os.mkdir(tasks)
+            task = pjoin(tasks, 'task0')
+            os.mkdir(task)
+            for file in infiles:
+                shutil.copy(file, task)
+
+            with open(pjoin(task, 'START'), 'w'):
+                pass
+
+            vm.add_diskimg('input', 'input.img', data_path=data_dir,
+                           cache='unsafe', size=args['input_size'],
+                           if_='virtio', aio='native')
+        finally:
+            shutil.rmtree(data_dir)
+
         vm.add_diskimg('output', 'output.img', [], size=args['output_size'],
-                       if_='virtio', aio='threads', cache='none')
+                       if_='virtio', aio='native', cache='unsafe')
+        vm.add_option('enable-kvm')
         vm.add_option('cpu', 'host')
         vm.add_option('m', args['mem'])
         vm.add_option('smp', sockets=args['sockets'], cores=args['cores'],
@@ -344,6 +385,10 @@ def maxquant_vm(qemu, infiles, windows_image, **kwargs):
     except BaseException:
         vm.__exit__()
         raise
+
+
+def mqrun(params, data_path, root_image, **kwarg):
+    pass
 
 
 def parse_args():
@@ -385,6 +430,11 @@ def parse_args():
     )
     parser.add_argument(
         '--output-size', help='Size of the output image', default='+50G'
+    )
+    parser.add_argument(
+        '--keep-images',
+        help='Do not delete temporary disk images after shutdown',
+        default=False, action='store_true'
     )
     parser.add_argument(
         'output_dir', help='Store MaxQuant output in this directory'

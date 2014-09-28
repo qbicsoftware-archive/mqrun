@@ -346,7 +346,7 @@ def mqrun(binpath, params, datapaths, outdir, tmpdir, logger=None):
         xml.write(f)
     logger.info("Run MaxQuant")
     mqcall = subprocess.Popen(
-        [str(binpath), '-mqpar', str(xml_path)],
+        [str(binpath), str(xml_path)],
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
     )
@@ -704,8 +704,6 @@ class GlobalParams(MQParamSet):
         version.text = "1.5.0.0"
         name = ElementTree.SubElement(params, 'name')
         name.text = "Session1"
-        numThreads = ElementTree.SubElement(params, 'numThreads')
-        numThreads.text = "1"
         mail = ElementTree.SubElement(params, 'sendEmail')
         mail.text = "false"
 

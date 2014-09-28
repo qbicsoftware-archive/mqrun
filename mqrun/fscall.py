@@ -19,7 +19,7 @@ except:
         pass
 
 
-def listen(listendir, maxqueue=0, task_re=None, interval=2):
+def listen(listendir, outdir, maxqueue=0, task_re=None, interval=2):
     """ Return a generator of new tasks in listendir """
     listendir = Path(listendir).resolve()
     if not listendir.is_dir():
@@ -40,7 +40,7 @@ def listen(listendir, maxqueue=0, task_re=None, interval=2):
                     continue
                 logging.info("New task in dir " + str(dir))
                 try:
-                    task = FSRequest(dir)
+                    task = FSRequest(dir, outdir=outdir)
                 except Exception as e:
                     logging.error("Could not create Task: " + str(e))
                 else:
@@ -69,7 +69,7 @@ class FSRequest(object):
     def outdir(self):
         return self._outdir
 
-    def __init__(self, dir, uuid=None):
+    def __init__(self, dir, outdir, uuid=None):
 
         self._dir = dir
 
@@ -89,12 +89,12 @@ class FSRequest(object):
                       .format(self._dir, self._uuid))
         self.log.info("Start log in task-local logfile")
 
-        try:
-            (dir / "output").mkdir()
-        except FileExistsError:
-            raise ValueError("Output directory exists")
+        self._outdir = outdir / ("output_" + self._uuid)
 
-        self._outdir = dir / "output"
+        try:
+            self._outdir.mkdir()
+        except FileExistsError:
+            raise ValueError("Output directory exists: %s" % self._outdir)
 
         self._beat_file = dir / "BEAT"
         if self._beat_file.exists():

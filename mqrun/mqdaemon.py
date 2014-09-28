@@ -52,6 +52,7 @@ def parse_args():
     )
     parser.add_argument('listendir', help="directory where tasks are dumped",
                         type=Path)
+    parser.add_argument('outdir', help='output directory', type=Path)
     parser.add_argument('-n', '--num-workers',
                         help="number of worker threads",
                         type=int, default=2)
@@ -63,8 +64,11 @@ def parse_args():
                         type=int, default=10)
     parser.add_argument('--mqpath', help="path tho MaxQuant binary",
                         type=Path, default=MQBINPATH)
+    parser.add_argument('--tmpdir', help='temporary directory for maxquant')
     parser.add_argument('--task-re', help="regular expression for tasks",
                         default=None)
+    parser.add_argument('--maxtasks', help='maximum number of tasks to start',
+                        default=None, type=int)
     parser.add_argument('--logfile',
                         help="global logfile for all MaxQuant runs",
                         default='maxquant.log',
@@ -174,30 +178,26 @@ class MQJob(threading.Thread):
     TODO
     ----
     - Move creation of xml file to step 1
-
-    - Copy data files to a temporary directory before at the beginning of step
-      1
+    - Copy data files to a temporary directory before at the beginning of step 1
 
     Arguments
     ---------
     task : fscall.Task
         The task that should be executed
-
     prepare_sem : threading.Semaphore
         A semaphore that protects checksums and parameter file generation.
         Theses should be executed as soon as possible to make errors visible.
-
     mq_sem : threading.Semaphore
         A spmaphore that protects the MaxQuant computation.
-
     sem_timeout : int, seconds
         The max time to wait for resources.
-
     mq_timeout : int, seconds
         The maximum running time for MaxQuant.
+    tmpdir : str
+        Base directory for all temporary directories used by MaxQuant.
     """
     def __init__(self, mqpath, task, prepare_sem, mq_sem, sem_timeout,
-                 mq_timeout, **kwargs):
+                 mq_timeout, tmpdir=None, **kwargs):
         super().__init__(**kwargs)
         self.task = task
         self.prepare_sem = prepare_sem
@@ -205,6 +205,7 @@ class MQJob(threading.Thread):
         self.sem_timeout = sem_timeout
         self.mq_timeout = mq_timeout
         self.mqpath = mqpath
+        self.tmpdir = tmpdir
 
     def _process_params(self):
         param_file, datafiles = bucket_files(self.task.log, self.task.infiles)
@@ -214,9 +215,10 @@ class MQJob(threading.Thread):
         return params, datafiles
 
     def _run_maxquant(self, params, datafiles):
-        with tempfile.TemporaryDirectory() as tmpdir:
+        with tempfile.TemporaryDirectory(dir=self.tmpdir) as tmpdir:
             log = self.task.log
-            log.info('Executing MaxQuant with tempdir ' + str(tmpdir))
+            log.info('Executing MaxQuant with tempdir %s and outdir %s' % (
+                str(tmpdir), str(self.task.outdir)))
 
             mqcall = mqparams.mqrun(
                 self.mqpath,
@@ -298,7 +300,7 @@ class MQJob(threading.Thread):
 
 class MQDaemon(object):
 
-    def __init__(self, logger, listendir, mqpath, **args):
+    def __init__(self, logger, listendir, mqpath, outdir, tmpdir, **args):
 
         self.listendir = listendir
         self.log = logger
@@ -312,7 +314,7 @@ class MQDaemon(object):
         if args.get('mqtimeout', None) is not None:
             self.mqtimeout = args['mqtimeout']
         else:
-            self.mqtimeout = 3600 * 5  # 5 hours
+            self.mqtimeout = None
 
         if args.get('num_workers', None) is not None:
             self.num_workers = args['num_workers']
@@ -321,21 +323,34 @@ class MQDaemon(object):
 
         self.listener = fscall.listen(
             listendir=listendir,
+            outdir=outdir,
             task_re=args.get('task_re', None),
         )
         self.mq_sem = threading.BoundedSemaphore(self.num_workers)
         self.prepare_sem = threading.BoundedSemaphore(self.num_workers)
+        self.tmpdir = tmpdir
 
-    def serve(self):
+    def serve(self, maxtasks=None):
         """ Listen for new tasks in listendir and start worker thread. """
-        for task in self.listener:
+        tasks = []
+        for i, task in enumerate(self.listener):
             task_thread = MQJob(
                 self.mqpath, task,
                 self.prepare_sem, self.mq_sem, self.timeout, self.mqtimeout,
+                tmpdir=self.tmpdir,
                 name="worker-{}".format(task.uuid),
             )
             task.log.info("Create thread for new task " + task.uuid)
+            tasks.append(task_thread)
             task_thread.start()
+            if maxtasks is not None and i + 1 >= maxtasks:
+                break
+
+        self.log.info('Maximum number of tasks reached. No new tasks will be ' +
+                      'started')
+
+        for task in tasks:
+            task.join()
 
 
 def main():
@@ -351,6 +366,8 @@ def main():
     logging.info("timeout is " + str(args.timeout))
     logging.info("num_workers is " + str(args.num_workers))
     logging.info("path to maxquant is " + str(args.mqpath))
+    logging.info('output dir is ' + str(args.outdir))
+    logging.info('maxtasks is ' + str(args.maxtasks))
 
     daemon = MQDaemon(
         logging,
@@ -358,11 +375,13 @@ def main():
         args.mqpath,
         timeout=args.timeout,
         num_workers=args.num_workers,
+        outdir=args.outdir,
+        tmpdir=args.tmpdir,
     )
     print("Listening in dir " + str(args.listendir))
     logging.info('start to listen in directory ' + str(args.listendir))
 
-    daemon.serve()
+    daemon.serve(args.maxtasks)
 
 
 if __name__ == '__main__':

@@ -1058,6 +1058,14 @@
           "title": "multiModificationSearch",
           "type": "boolean"
         },
+        "numThreads": {
+          "description": "number of threads to use for computation",
+          "id": "#numThreads",
+          "name": "numThreads",
+          "required": false,
+          "title": "threads",
+          "type": "integer"
+        },
         "peptideFdr": {
           "description": "",
           "id": "#peptideFdr",
