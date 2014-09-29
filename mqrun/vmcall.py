@@ -5,6 +5,13 @@ import logging
 import argparse
 import shutil
 import concurrent.futures
+import threading
+import select
+import socketserver
+import struct
+import pickle
+import time
+import sys
 from os.path import join as pjoin
 
 
@@ -164,9 +171,10 @@ class VMTask:
         self._stopped = False
 
         self._keep_images = keep_images
+        self._use_socket_logging = False
 
     def add_diskimg(self, name, path, data_files=None, data_path=None,
-                    *args, type='ntfs', format='raw', size='+500M', **options):
+                    type='ntfs', format='raw', size='+500M', *args, **options):
         """ Create a new disk image and attach it to the VM.
 
         TODO: change name to path
@@ -244,6 +252,19 @@ class VMTask:
         """
         self._options.append((name, args, kwargs))
 
+    def add_logging(self, socket_file, host_ip, port):
+        if self._use_socket_logging:
+            raise ValueError('add_logging was called more than once.')
+        if os.path.exists(socket_file):
+            raise ValueError('Socket file exists: %s' % socket_file)
+        self._use_socket_logging = True
+        self._socket_file = socket_file
+
+        self.add_option('chardev', 'socket', path=socket_file, id='logging')
+        guestfwd = "tcp:{}:{}-chardev:{}".format(host_ip, port, 'logging')
+        self.add_option('net', 'nic')
+        self.add_option('net', 'user', guestfwd=guestfwd)
+
     def copy_out(self, image, dest, path='/'):
         """ Extract files from image. """
         if image not in self._images:
@@ -255,6 +276,17 @@ class VMTask:
 
         If the VMTask._stopped flag is set, the vm will be killed.
         """
+
+        if self._use_socket_logging:
+            # prepare the logging socket
+            tcpserver = LogRecordSocketReciever(self._socket_file)
+            logging_thread = threading.Thread(
+                target=tcpserver.serve_until_stopped
+            )
+            logging_thread.start()
+            self._logging_thread = logging_thread
+            self._tcpserver = tcpserver
+
         cmd = [self._qemu_bin]
         for name, args, kwargs in self._options:
             cmd.append('-' + name)
@@ -272,7 +304,6 @@ class VMTask:
                 cmd.append(args)
 
         cmd = [item.rstrip('_') for item in cmd]
-        print(cmd)
 
         self._vm_popen = subprocess.Popen(
             cmd, stdin=subprocess.PIPE, stderr=subprocess.PIPE
@@ -287,24 +318,33 @@ class VMTask:
         else:
             self._vm_popen.kill()
             out, err = self._vm_popen.communicate()
-            print(out)
-            print(err)
+            if out:
+                print(out)
+            if err:
+                print(err)
             raise RuntimeError("qemu was aborted")
         out, err = self._vm_popen.communicate()
-        print(out)
-        print(err)
+        if out:
+            print(out)
+        if err:
+            print(err)
 
         if retcode:
             raise ValueError("qemu returned error code %s" % retcode)
 
     def __exit__(self, *args, **kwargs):
         self._stopped = True
+        if hasattr(self, '_tcpserver'):
+            self._tcpserver.abort = True
+            time.sleep(1.1)
         if hasattr(self, '_vm_popen'):
             self._vm_popen.wait()
         if not self._keep_images:
             for path in self._images.values():
                 os.unlink(path)
             os.unlink(self._root_image)
+        if hasattr(self, '_socket_file') and os.path.exists(self._socket_file):
+            os.unlink(self._socket_file)
 
     def __enter__(self):
         return self
@@ -338,6 +378,8 @@ def maxquant_vm(qemu, infiles, windows_image, **kwargs):
         Size of the input image
     output_size: str, optional
         Size of the output image
+    vm_logging: bool
+        Export log records from vm
     """
     args = {
         'sockets': 1,
@@ -348,6 +390,7 @@ def maxquant_vm(qemu, infiles, windows_image, **kwargs):
         'display': False,
         'mem': '2G',
         'keep_images': False,
+        'vm_logging': True,
     }
     args.update(kwargs)
 
@@ -378,6 +421,8 @@ def maxquant_vm(qemu, infiles, windows_image, **kwargs):
         vm.add_option('m', args['mem'])
         vm.add_option('smp', sockets=args['sockets'], cores=args['cores'],
                       threads=args['threads'])
+        if args['vm_logging']:
+            vm.add_logging('logging.socket', '10.0.2.100', 8000)
 
         if args['display']:
             vm.add_option('display', 'sdl')
@@ -387,8 +432,43 @@ def maxquant_vm(qemu, infiles, windows_image, **kwargs):
         raise
 
 
-def mqrun(params, data_path, root_image, **kwarg):
-    pass
+# Read logging record from a unix domain socket. qemu redirects a tcp
+# stream from the vm to this socket. For details see
+# https://docs.python.org/3/howto/logging-cookbook.html#logging-cookbook
+
+class LogRecordStreamHandler(socketserver.StreamRequestHandler):
+    def handle(self):
+        logger = logging.getLogger('vm_mqdaemon')
+        while True:
+            chunk = self.connection.recv(4)
+            if len(chunk) < 4:
+                break
+            slen = struct.unpack('>L', chunk)[0]
+            chunk = self.connection.recv(slen)
+            while len(chunk) < slen:
+                chunk = chunk + self.connection.recv(slen - len(chunk))
+            obj = pickle.loads(chunk)
+            record = logging.makeLogRecord(obj)
+            logger.handle(record)
+
+
+class LogRecordSocketReciever(socketserver.ThreadingMixIn,
+                              socketserver.UnixStreamServer):
+    allow_reuse_adddress = True
+
+    def __init__(self, socket_file, handler=LogRecordStreamHandler):
+        super().__init__(socket_file, handler)
+        self.abort = 0
+        self.timeout = 1
+
+    def serve_until_stopped(self):
+        abort = 0
+        while not abort:
+            rd, wr, ex = select.select([self.socket.fileno()],
+                                       [], [], self.timeout)
+            if rd:
+                self.handle_request()
+            abort = self.abort
 
 
 def parse_args():
@@ -437,6 +517,10 @@ def parse_args():
         default=False, action='store_true'
     )
     parser.add_argument(
+        '--no-vm-logging', help='Export logging information from the vm',
+        default=False, action='store_true'
+    )
+    parser.add_argument(
         'output_dir', help='Store MaxQuant output in this directory'
     )
     parser.add_argument(
@@ -455,7 +539,11 @@ def main():
     output_dir = args['output_dir']
     del args['raw_files'], args['params'], args['output_dir']
     qemu = args['qemu']
+    args['vm_logging'] = not args['no_vm_logging']
+    del args['no_vm_logging']
     del args['qemu']
+
+    logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
     with maxquant_vm(qemu, infiles, **args) as vm:
         with concurrent.futures.ThreadPoolExecutor(1) as ex:
             res = ex.submit(vm.run)

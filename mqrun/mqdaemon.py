@@ -30,6 +30,7 @@ from __future__ import print_function
 from pathlib import Path
 import threading
 import logging
+import logging.handlers
 import argparse
 import sys
 import subprocess
@@ -73,6 +74,10 @@ def parse_args():
                         help="global logfile for all MaxQuant runs",
                         default='maxquant.log',
                         type=Path)
+    parser.add_argument('--logging-ip', help='Send logging to this ip via TCP')
+    parser.add_argument('--logging-port', help='Port to use for logging-ip',
+                        default=logging.handlers.DEFAULT_TCP_LOGGING_PORT,
+                        type=int)
 
     args = parser.parse_args()
 
@@ -353,14 +358,23 @@ class MQDaemon(object):
             task.join()
 
 
+def setup_logging(args):
+    root = logging.getLogger('')
+    root.setLevel(logging.INFO)
+    if args.logging_ip:
+        socket_handler = logging.handlers.SocketHandler(
+            args.logging_ip, args.logging_port
+        )
+        root.addHandler(socket_handler)
+    if args.logfile:
+        filehandler = logging.FileHandler(str(args.logfile))
+        root.addHandler(filehandler)
+
+
 def main():
     args = parse_args()
     print("Starting daemon...")
-    logging.basicConfig(
-        level=logging.INFO,
-        filename=str(args.logfile),
-    )
-    print("Logging initialized. Logfile is " + str(args.logfile))
+    setup_logging(args)
     logging.info("starting daemon")
     logging.info("listendir is " + str(args.listendir))
     logging.info("timeout is " + str(args.timeout))
