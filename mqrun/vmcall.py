@@ -380,6 +380,8 @@ def maxquant_vm(qemu, infiles, windows_image, **kwargs):
         Size of the output image
     vm_logging: bool
         Export log records from vm
+    cache: {'none', 'unsafe', 'writethrough'}
+        Cache mode to pass to qemu
     """
     args = {
         'sockets': 1,
@@ -391,6 +393,7 @@ def maxquant_vm(qemu, infiles, windows_image, **kwargs):
         'mem': '2G',
         'keep_images': False,
         'vm_logging': True,
+        'cache': 'unsafe',
     }
     args.update(kwargs)
 
@@ -409,13 +412,13 @@ def maxquant_vm(qemu, infiles, windows_image, **kwargs):
                 pass
 
             vm.add_diskimg('input', 'input.img', data_path=data_dir,
-                           cache='unsafe', size=args['input_size'],
+                           cache=args['cache'], size=args['input_size'],
                            if_='virtio', aio='native')
         finally:
             shutil.rmtree(data_dir)
 
         vm.add_diskimg('output', 'output.img', [], size=args['output_size'],
-                       if_='virtio', aio='native', cache='unsafe')
+                       if_='virtio', aio='native', cache=args['cache'])
         vm.add_option('enable-kvm')
         vm.add_option('cpu', 'host')
         vm.add_option('m', args['mem'])
@@ -521,6 +524,9 @@ def parse_args():
     parser.add_argument(
         '--no-vm-logging', help='Export logging information from the vm',
         default=False, action='store_true'
+    )
+    parser.add_argument(
+        '--cache', help='Cache mode for qemu', default='unsafe'
     )
     parser.add_argument(
         'output_dir', help='Store MaxQuant output in this directory'
