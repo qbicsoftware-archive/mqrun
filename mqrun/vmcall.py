@@ -263,7 +263,7 @@ class VMTask:
         self.add_option('chardev', 'socket', path=socket_file, id='logging')
         guestfwd = "tcp:{}:{}-chardev:{}".format(host_ip, port, 'logging')
         self.add_option('net', 'nic')
-        self.add_option('net', 'user', guestfwd=guestfwd)
+        self.add_option('net', 'user', guestfwd=guestfwd, restrict='on')
 
     def copy_out(self, image, dest, path='/'):
         """ Extract files from image. """
@@ -425,7 +425,9 @@ def maxquant_vm(qemu, infiles, windows_image, **kwargs):
             vm.add_logging('logging.socket', '10.0.2.100', 8000)
 
         if args['display']:
-            vm.add_option('display', 'sdl')
+            vm.add_option('display', 'gtk')
+        else:
+            vm.add_option('display', 'none')
         return vm
     except BaseException:
         vm.__exit__()

@@ -61,6 +61,7 @@ setup(
     entry_points={
         'console_scripts': [
             'mqdaemon=mqrun.mqdaemon:main',
+            'mqrun=mqrun.vmcall:main',
         ],
     },
 )
