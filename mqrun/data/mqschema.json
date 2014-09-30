@@ -1532,35 +1532,35 @@
           "title": "aifTopx",
           "type": "integer"
         },
-        {
+        "writeAllPeptidesTable": {
           "id": "#writeAllPeptidesTable",
           "name": "writeAllPeptidesTable",
           "required": false,
           "title": "writeAllPeptidesTable",
           "type": "boolean"
         },
-        {
+        "writeMs3ScansTable": {
           "id": "#writeMs3ScansTable",
           "name": "writeMs3ScansTable",
           "required": false,
           "title": "writeMs3ScansTable",
           "type": "boolean"
         },
-        {
+        "writeMsScansTable": {
           "id": "#writeMsScansTable",
           "name": "writeMsScansTable",
           "required": false,
           "title": "writeMsScansTable",
           "type": "boolean"
         },
-        {
+        "writeMsmsScansTable": {
           "id": "#writeMsmsScansTable",
           "name": "writeMsmsScansTable",
           "required": false,
           "title": "writeMsmsScansTable",
           "type": "boolean"
         },
-        {
+        "writeMzRangeTable": {
           "id": "#writeMzRangeTable",
           "name": "writeMzRangeTable",
           "required": false,
