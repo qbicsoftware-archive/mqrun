@@ -843,12 +843,12 @@
           "title": "ibaqLogFit",
           "type": "boolean"
         },
-        "includeContamiants": {
+        "includeContaminants": {
           "description": "",
-          "id": "#includeContamiants",
+          "id": "#includeContaminants",
           "name": "",
           "required": false,
-          "title": "includeContamiants",
+          "title": "includeContaminants",
           "type": "boolean"
         },
         "ionCountIntensities": {
@@ -1531,6 +1531,41 @@
           "required": false,
           "title": "aifTopx",
           "type": "integer"
+        },
+        {
+          "id": "#writeAllPeptidesTable",
+          "name": "writeAllPeptidesTable",
+          "required": false,
+          "title": "writeAllPeptidesTable",
+          "type": "boolean"
+        },
+        {
+          "id": "#writeMs3ScansTable",
+          "name": "writeMs3ScansTable",
+          "required": false,
+          "title": "writeMs3ScansTable",
+          "type": "boolean"
+        },
+        {
+          "id": "#writeMsScansTable",
+          "name": "writeMsScansTable",
+          "required": false,
+          "title": "writeMsScansTable",
+          "type": "boolean"
+        },
+        {
+          "id": "#writeMsmsScansTable",
+          "name": "writeMsmsScansTable",
+          "required": false,
+          "title": "writeMsmsScansTable",
+          "type": "boolean"
+        },
+        {
+          "id": "#writeMzRangeTable",
+          "name": "writeMzRangeTable",
+          "required": false,
+          "title": "writeMzRangeTable",
+          "type": "boolean"
         }
       },
       "required": false,

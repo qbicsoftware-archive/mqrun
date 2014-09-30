@@ -701,7 +701,7 @@ class GlobalParams(MQParamSet):
         super().write_into_xml(xml_tree, ignore)
         params = xml_tree.getroot()
         version = ElementTree.SubElement(params, 'maxQuantVersion')
-        version.text = "1.5.0.0"
+        version.text = "1.5.1.0"
         name = ElementTree.SubElement(params, 'name')
         name.text = "Session1"
         mail = ElementTree.SubElement(params, 'sendEmail')

@@ -14,8 +14,8 @@
         "minScoreModifiedPeptides": 40,
         "ibaqLogFit": false,
         "lfqRequireMsms": true,
-        "includeContamiants": true,
-        "minDeltaScoreModifiedPeptides": 17,
+        "includeContaminants": true,
+        "minDeltaScoreModifiedPeptides": 6,
         "specialAas": "KR",
         "filterAacounts": true,
         "crossLinkerSearch": false,
@@ -180,6 +180,11 @@
         "aifMinMass": 0,
         "aifIsoWeight": 2,
         "aifMsmsTol": 10,
-        "aifCorrelationFirstPass": 0.8
+        "aifCorrelationFirstPass": 0.8,
+        "writeAllPeptidesTable": true,
+        "writeMs3ScansTable": true,
+        "writeMsScansTable": true,
+        "writeMsmsScansTable": true,
+        "writeMzRangeTable": true
     }
 }
