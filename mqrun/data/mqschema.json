@@ -372,6 +372,52 @@
                 "title": "mainSearchTol",
                 "type": "number"
               },
+              "libraryFile": {
+                "description": "",
+                "id": "#libraryFile",
+                "minimum": 0,
+                "name": "",
+                "required": false,
+                "title": "libraryFile",
+                "type": "array",
+                "items": {"type": "string"}
+              },
+              "matchLabelTimeTolMin": {
+                "description": "",
+                "id": "#matchLabelTimeTolMin",
+                "minimum": 0,
+                "name": "",
+                "required": false,
+                "title": "matchLabelTimeTolMin",
+                "type": "number"
+              },
+              "matchLibraryFile": {
+                "description": "",
+                "id": "#matchLibraryFile",
+                "minimum": 0,
+                "name": "",
+                "required": false,
+                "title": "matchLibraryFile",
+                "type": "boolean"
+              },
+              "matchLibraryMassTolPpm": {
+                "description": "",
+                "id": "#matchLibraryMassTolPpm",
+                "minimum": 0,
+                "name": "",
+                "required": false,
+                "title": "matchLibraryMassTolPpm",
+                "type": "number"
+              },
+              "matchLibraryTimeTolMin": {
+                "description": "",
+                "id": "#matchLibraryTimeTolMin",
+                "minimum": 0,
+                "name": "",
+                "required": false,
+                "title": "matchLibraryTimeTolMin",
+                "type": "number"
+              },
               "matchType": {
                 "description": "",
                 "id": "#matchType",
