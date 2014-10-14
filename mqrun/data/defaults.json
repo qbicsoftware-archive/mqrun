@@ -185,7 +185,7 @@
                 "libraryFile": [],
                 "matchLabelTimeTolMin": 0,
                 "matchLibraryFile": false,
-                "matchLibraryMasTolPpm": 0,
+                "matchLibraryMassTolPpm": 0,
                 "matchLibraryTimeTolMin": 0,
                 "isotopeTimeCorrelation": 0.6,
                 "maxTime": NaN,
