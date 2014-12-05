@@ -146,6 +146,7 @@ import logging
 import numbers
 import math
 import itertools
+import os
 
 __all__ = ['xml_to_data', 'data_to_xml', 'mqrun']
 
@@ -222,6 +223,40 @@ def rec_update(d, u):
             d[k] = r
         else:
             d[k] = u[k]
+
+
+def check_params(params):
+    """ Convert the parameters to xml and raise errors for invalid params.
+
+    ``params`` can either be a filename (json or yaml) or a dict.
+    """
+    class DefaultDictContains(collections.UserDict):
+        def __getitem__(self, attr):
+            return "path/to/file"
+
+        def __contains__(self, other):
+            return True
+
+        def __eq__(self, other):
+            if other == {}:
+                return False
+            super().__eq__(self, other)
+    file_paths = DefaultDictContains()
+    fasta_paths = DefaultDictContains()
+    output_dir = "/tmp/output"
+
+    if isinstance(params, dict):
+        pass
+    elif os.path.splitext(params)[1].lower() == '.json':
+        with open(params) as f:
+            params = json.load(f)
+    elif os.path.splitext(params)[1].lower() == '.yaml':
+        import yaml
+        with open(params) as f:
+            params = yaml.load(f)
+    else:
+        raise ValueError("Unknown parameter format: %s" % params)
+    data_to_xml(params, file_paths, fasta_paths, output_dir)
 
 
 def data_to_xml(user_data, file_paths, fasta_paths,

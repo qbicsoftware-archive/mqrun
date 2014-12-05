@@ -1,5 +1,8 @@
+from __future__ import print_function
+
 import subprocess
 import os
+import traceback
 import tempfile
 import logging
 import argparse
@@ -12,10 +15,14 @@ import struct
 import pickle
 import time
 import sys
+import json
+import yaml
+import jsonschema
 from os.path import join as pjoin
+from . import mqparams
 
 
-logger = logging.getLogger('run-maxquant-host')
+logger = logging.getLogger('mqrun-host')
 
 
 def prepare_data_image(dest, data_dir, type='ntfs', format='raw', size='+1G'):
@@ -52,6 +59,7 @@ def prepare_data_image(dest, data_dir, type='ntfs', format='raw', size='+1G'):
     if os.path.exists(dest):
         raise ValueError('Destination file exists: %s' % dest)
 
+    logger.info("Copying data from %s to image", data_dir)
     subprocess.check_call(
         [
             'virt-make-fs',
@@ -69,7 +77,7 @@ def prepare_data_image(dest, data_dir, type='ntfs', format='raw', size='+1G'):
     return dest
 
 
-def extract_from_image(image, dest, path='/', use_tar=False):
+def extract_from_image(image, dest, path='/', use_tar=True):
     """ Write the contents of disk image `image` to `dest`.
 
     This can be used while the virtual machine is running.
@@ -101,6 +109,7 @@ def extract_from_image(image, dest, path='/', use_tar=False):
     else:
         command = 'copy-out'
 
+    logger.info("Extracting data from image %s to %s", image, dest)
     subprocess.check_call(
         [
             'guestfish',
@@ -305,6 +314,7 @@ class VMTask:
 
         cmd = [item.rstrip('_') for item in cmd]
 
+        logger.info("Starting virtual machine")
         self._vm_popen = subprocess.Popen(
             cmd, stdin=subprocess.PIPE, stderr=subprocess.PIPE
         )
@@ -316,6 +326,7 @@ class VMTask:
             except subprocess.TimeoutExpired:
                 pass
         else:
+            logger.warn("Got a signal to stop the vm. Sendig SIGTERM to qemu.")
             self._vm_popen.kill()
             out, err = self._vm_popen.communicate()
             if out:
@@ -428,7 +439,7 @@ def maxquant_vm(qemu, infiles, windows_image, **kwargs):
             vm.add_logging('logging.socket', '10.0.2.100', 8000)
 
         if args['display']:
-            vm.add_option('display', 'gtk')
+            vm.add_option('display', 'sdl')
         else:
             vm.add_option('display', 'none')
         return vm
@@ -443,7 +454,8 @@ def maxquant_vm(qemu, infiles, windows_image, **kwargs):
 
 class LogRecordStreamHandler(socketserver.StreamRequestHandler):
     def handle(self):
-        logger = logging.getLogger('vm_mqdaemon')
+        logger.info("Incoming connection from remote logging server")
+        remote_logger = logging.getLogger('vm_mqdaemon')
         while True:
             chunk = self.connection.recv(4)
             if len(chunk) < 4:
@@ -454,7 +466,7 @@ class LogRecordStreamHandler(socketserver.StreamRequestHandler):
                 chunk = chunk + self.connection.recv(slen - len(chunk))
             obj = pickle.loads(chunk)
             record = logging.makeLogRecord(obj)
-            logger.handle(record)
+            remote_logger.handle(record)
 
 
 class LogRecordSocketReciever(socketserver.ThreadingMixIn,
@@ -511,10 +523,10 @@ def parse_args():
     parser.add_argument(
         '--input-size', help='Size of the input disk image (use +1G if you ' +
         'want 1 gigabyte of free space after the input files have been ' +
-        'written)', default='+10G'
+        'written)', default='+20G'
     )
     parser.add_argument(
-        '--output-size', help='Size of the output image', default='+50G'
+        '--output-size', help='Size of the output image', default='+100G'
     )
     parser.add_argument(
         '--keep-images',
@@ -529,7 +541,7 @@ def parse_args():
         '--cache', help='Cache mode for qemu', default='unsafe'
     )
     parser.add_argument(
-        'output_dir', help='Store MaxQuant output in this directory'
+        'output', help='Output file for maxquant (a tar archive)'
     )
     parser.add_argument(
         'params', help='Parameter file. Ether MaxQuant xml, yaml or json',
@@ -543,8 +555,9 @@ def parse_args():
 
 def main():
     args = vars(parse_args())
+    params = args['params']
     infiles = args['raw_files'] + [args['params']]
-    output_dir = args['output_dir']
+    output = args['output']
     del args['raw_files'], args['params'], args['output_dir']
     qemu = args['qemu']
     args['vm_logging'] = not args['no_vm_logging']
@@ -552,14 +565,41 @@ def main():
     del args['qemu']
 
     logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
+
+    with open(pjoin(os.path.dirname(__file__), 'data', 'mqschema.json')) as f:
+        schema = json.load(f)
+
+    with open(params) as f:
+        if params.endswith('.yaml'):
+            params_dict = yaml.load(params)
+        elif params.endswith('.json'):
+            params_dict = json.load(params)
+        else:
+            raise ValueError('Unknown parameter file format: %s' % params)
+
+    validator = jsonschema.Draft4Validator(schema)
+    for error in validator.iter_errors(params_dict):
+        print("Error in parameter file at %s: %s", error.message, error.path)
+
+    try:
+        mqparams.check_params(params)
+    except Exception:
+        print("Invalid parameter file. Error was", file=sys.stderr)
+        traceback.print_exc(file=sys.stderr)
+        exit(1)
     with maxquant_vm(qemu, infiles, **args) as vm:
         with concurrent.futures.ThreadPoolExecutor(1) as ex:
             res = ex.submit(vm.run)
             try:
                 res.result()
             finally:
-                vm.copy_out('output', output_dir)
+                vm.copy_out('output', output)
 
 
 if __name__ == '__main__':
-    main()
+    try:
+        main()
+    except Exception:
+        print("mqrun did not finish successfully. Error was", file=sys.stderr)
+        traceback.print_exc(file=sys.stderr)
+        exit(1)

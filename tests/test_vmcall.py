@@ -1,4 +1,5 @@
 from mqrun.vmcall import *
+from mqrun import mqparams
 import tempfile
 import os
 from os.path import join as pjoin
@@ -43,7 +44,7 @@ class TestDataImage():
         prepare_data_image(image, data, size="20M")
         outdir = pjoin(self.tmpdir, 'outdir')
         os.mkdir(outdir)
-        extract_from_image(image, outdir)
+        extract_from_image(image, outdir, use_tar=False)
         with open(pjoin(outdir, 'testfile')) as f:
             assert f.read() == 'hi'
 
@@ -53,7 +54,7 @@ class TestDataImage():
         prepare_data_image(image, data, size="20M")
         outdir = pjoin(self.tmpdir, 'outdir')
         os.mkdir(outdir)
-        extract_from_image(image, outdir, path='/testfile')
+        extract_from_image(image, outdir, path='/testfile', use_tar=False)
         with open(pjoin(outdir, 'testfile')) as f:
             assert f.read() == 'hi'
 
@@ -90,3 +91,38 @@ class TestCreateOverlay():
         create_overlay(self.image, base_image)
         assert pexists(base_image)
         assert pexists(self.image)
+
+
+@raises(AssertionError)
+def test_check_params1():
+    with tempfile.NamedTemporaryFile(suffix='.json', mode='w') as tmp:
+        tmp.write('{"hi": 5}')
+        tmp.flush()
+        mqparams.check_params(tmp.name)
+
+
+@raises(TypeError)
+def test_check_params2():
+    with tempfile.NamedTemporaryFile(suffix='.json', mode='w') as tmp:
+        tmp.write('{"rawFiles": [{"params": {}, "files":[{"name": "hi"}]}]}')
+        tmp.flush()
+        mqparams.check_params(tmp.name)
+
+
+def test_check_params3():
+    with tempfile.NamedTemporaryFile(suffix='.json', mode='w') as tmp:
+        tmp.write(
+            '''
+            {
+                "rawFiles": [
+                    {"params": {}, "files":[{"name": "hi"}]}
+                ],
+                "fastaFiles": {
+                    "fileNames": ["blubb"],
+                    "firstSearch": []
+                }
+            }
+            '''
+        )
+        tmp.flush()
+        mqparams.check_params(tmp.name)
