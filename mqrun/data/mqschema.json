@@ -4,26 +4,24 @@
   "id": "#mqparams",
   "name": "mqparams",
   "title": "MaxQuant Parameters",
-  "required": true,
+  "required": ["rawFiles", "fastaFiles"],
   "type": "object",
   "properties": {
     "rawFiles": {
       "id": "#rawFiles",
       "type": "array",
       "description": "Groups of raw files that use the same parameters",
-      "required": true,
       "name": "",
       "minItems": 1,
-      "uniqueItems": true,
       "title": "rawFiles",
       "items": {
+        "id": "#rawFileItems",
         "name": "",
         "type": "object",
-        "id": "#0",
         "properties": {
+          "required": ["files", "params"],
           "files": {
             "id": "#files",
-            "required": true,
             "minimum": 1,
             "title": "files",
             "type": "array",
@@ -31,13 +29,13 @@
               "id": "rawFile",
               "titile": "raw file",
               "type": "object",
+              "required": ["name"],
               "properties": {
                 "experiment": {
                   "description": "",
                   "id": "#experiment",
                   "minLength": 0,
                   "name": "",
-                  "required": false,
                   "title": "experiment",
                   "type": "string"
                 },
@@ -46,14 +44,12 @@
                   "id": "#fraction",
                   "minimum": 0,
                   "name": "",
-                  "required": true,
                   "title": "fraction",
                   "type": "integer"
                 },
                 "name": {
                   "id": "#name",
                   "minLength": 1,
-                  "required": true,
                   "title": "name",
                   "type": "string"
                 }
@@ -63,7 +59,6 @@
           "params": {
             "type": "object",
             "name": "params",
-            "required": true,
             "title": "parameters",
             "description": "parameters specific to this set of raw files",
             "id": "#params",
@@ -76,13 +71,11 @@
                   "id": "#0",
                   "minLength": 0,
                   "name": "",
-                  "required": false,
                   "title": "items",
                   "type": "string"
                 },
                 "minItems": 0,
                 "name": "",
-                "required": false,
                 "title": "additionalVariableModificationProteins",
                 "type": "array",
                 "uniqueItems": false
@@ -95,13 +88,11 @@
                   "id": "#0",
                   "minLength": 0,
                   "name": "",
-                  "required": false,
                   "title": "items",
                   "type": "string"
                 },
                 "minItems": 0,
                 "name": "",
-                "required": false,
                 "title": "additionalVariableModifications",
                 "type": "array",
                 "uniqueItems": false
@@ -110,7 +101,6 @@
                 "description": "",
                 "id": "#advancedPeakSplitting",
                 "name": "",
-                "required": false,
                 "title": "advancedPeakSplitting",
                 "type": "boolean"
               },
@@ -118,7 +108,6 @@
                 "description": "",
                 "id": "#centroidMatchTol",
                 "name": "",
-                "required": false,
                 "title": "centroidMatchTol",
                 "type": "number"
               },
@@ -126,7 +115,6 @@
                 "description": "",
                 "id": "#centroidMatchTolInPpm",
                 "name": "",
-                "required": false,
                 "title": "centroidMatchTolInPpm",
                 "type": "boolean"
               },
@@ -137,7 +125,6 @@
                 "description": "",
                 "id": "#doMassFiltering",
                 "name": "",
-                "required": false,
                 "title": "doMassFiltering",
                 "type": "boolean"
               },
@@ -146,7 +133,6 @@
                 "id": "#enzymeMode",
                 "minimum": 0,
                 "name": "",
-                "required": false,
                 "title": "enzymeMode",
                 "type": "integer"
               },
@@ -155,7 +141,6 @@
                 "id": "#enzymeModeFirstSearch",
                 "minimum": 0,
                 "name": "",
-                "required": false,
                 "title": "enzymeModeFirstSearch",
                 "type": "integer"
               },
@@ -167,13 +152,11 @@
                   "id": "#0",
                   "minLength": 0,
                   "name": "",
-                  "required": false,
                   "title": "items",
                   "type": "string"
                 },
                 "minItems": 0,
                 "name": "Enzymes",
-                "required": false,
                 "title": "enzymes",
                 "type": "array",
                 "uniqueItems": false
@@ -186,13 +169,11 @@
                   "id": "#0",
                   "minLength": 0,
                   "name": "",
-                  "required": false,
                   "title": "items",
                   "type": "string"
                 },
                 "minItems": 0,
                 "name": "",
-                "required": false,
                 "title": "enzymesFirstSearch",
                 "type": "array",
                 "uniqueItems": false
@@ -201,7 +182,6 @@
                 "description": "",
                 "id": "#fastLfq",
                 "name": "",
-                "required": false,
                 "title": "fastLfq",
                 "type": "boolean"
               },
@@ -210,7 +190,6 @@
                 "id": "#firstSearchTol",
                 "minimum": 0,
                 "name": "",
-                "required": false,
                 "title": "firstSearchTol",
                 "type": "integer"
               },
@@ -218,7 +197,6 @@
                 "description": "",
                 "id": "#hasAdditionalVariableModifications",
                 "name": "",
-                "required": false,
                 "title": "hasAdditionalVariableModifications",
                 "type": "boolean"
               },
@@ -226,7 +204,6 @@
                 "description": "",
                 "id": "#intensityDependentCalibration",
                 "name": "",
-                "required": false,
                 "title": "intensityDependentCalibration",
                 "type": "boolean"
               },
@@ -234,7 +211,6 @@
                 "description": "",
                 "id": "#intensityDetermination",
                 "name": "",
-                "required": false,
                 "title": "intensityDetermination",
                 "type": "integer"
               },
@@ -242,7 +218,6 @@
                 "description": "",
                 "id": "#intensityThreshold",
                 "name": "",
-                "required": false,
                 "title": "intensityThreshold",
                 "type": "integer"
               },
@@ -254,13 +229,11 @@
                   "id": "#0",
                   "minLength": 0,
                   "name": "",
-                  "required": false,
                   "title": "items",
                   "type": "string"
                 },
                 "minItems": 0,
                 "name": "",
-                "required": false,
                 "title": "isobaricLabels",
                 "type": "array",
                 "uniqueItems": false
@@ -269,7 +242,6 @@
                 "description": "",
                 "id": "#isotopeMatchTol",
                 "name": "",
-                "required": false,
                 "title": "isotopeMatchTol",
                 "type": "integer"
               },
@@ -277,7 +249,6 @@
                 "description": "",
                 "id": "#isotopeMatchTolInPpm",
                 "name": "",
-                "required": false,
                 "title": "isotopeMatchTolInPpm",
                 "type": "boolean"
               },
@@ -285,7 +256,6 @@
                 "description": "",
                 "id": "#isotopeTimeCorrelation",
                 "name": "",
-                "required": false,
                 "title": "isotopeTimeCorrelation",
                 "type": "number"
               },
@@ -300,20 +270,17 @@
                     "id": "#0",
                     "minLength": 0,
                     "name": "",
-                    "required": false,
                     "title": "items",
                     "type": "string"
                   },
                   "minItems": 0,
                   "name": "",
-                  "required": false,
                   "title": "items",
                   "type": "array",
                   "uniqueItems": false
                 },
                 "minItems": 0,
                 "name": "",
-                "required": false,
                 "title": "labelMods",
                 "type": "array",
                 "uniqueItems": false
@@ -323,7 +290,6 @@
                 "id": "#lcmsRunType",
                 "minimum": 0,
                 "name": "",
-                "required": false,
                 "title": "lcmsRunType",
                 "type": "integer"
               },
@@ -331,8 +297,7 @@
                 "description": "",
                 "id": "#lfqAvEdgesPerNode",
                 "minLength": 0,
-                "name": "",
-                "required": false,
+                "name": ""	,
                 "title": "lfqAvEdgesPerNode",
                 "type": "string"
               },
@@ -341,7 +306,6 @@
                 "id": "#lfqMinEdgesPerNode",
                 "minimum": 0,
                 "name": "",
-                "required": false,
                 "title": "lfqMinEdgesPerNode",
                 "type": "integer"
               },
@@ -350,7 +314,6 @@
                 "id": "#lfqMinRatioCount",
                 "minimum": 0,
                 "name": "",
-                "required": false,
                 "title": "lfqMinRatioCount",
                 "type": "integer"
               },
@@ -359,7 +322,6 @@
                 "id": "#lfqMode",
                 "minimum": 0,
                 "name": "",
-                "required": false,
                 "title": "lfqMode",
                 "type": "integer"
               },
@@ -368,7 +330,6 @@
                 "id": "#mainSearchTol",
                 "minimum": 0,
                 "name": "",
-                "required": false,
                 "title": "mainSearchTol",
                 "type": "number"
               },
@@ -377,7 +338,6 @@
                 "id": "#libraryFile",
                 "minimum": 0,
                 "name": "",
-                "required": false,
                 "title": "libraryFile",
                 "type": "array",
                 "items": {"type": "string"}
@@ -387,7 +347,6 @@
                 "id": "#matchLabelTimeTolMin",
                 "minimum": 0,
                 "name": "",
-                "required": false,
                 "title": "matchLabelTimeTolMin",
                 "type": "number"
               },
@@ -396,7 +355,6 @@
                 "id": "#matchLibraryFile",
                 "minimum": 0,
                 "name": "",
-                "required": false,
                 "title": "matchLibraryFile",
                 "type": "boolean"
               },
@@ -405,7 +363,6 @@
                 "id": "#matchLibraryMassTolPpm",
                 "minimum": 0,
                 "name": "",
-                "required": false,
                 "title": "matchLibraryMassTolPpm",
                 "type": "number"
               },
@@ -414,7 +371,6 @@
                 "id": "#matchLibraryTimeTolMin",
                 "minimum": 0,
                 "name": "",
-                "required": false,
                 "title": "matchLibraryTimeTolMin",
                 "type": "number"
               },
@@ -422,7 +378,6 @@
                 "description": "",
                 "id": "#matchType",
                 "name": "",
-                "required": false,
                 "title": "matchType",
                 "type": "string"
               },
@@ -431,7 +386,6 @@
                 "id": "#maxCharge",
                 "minimum": 0,
                 "name": "",
-                "required": false,
                 "title": "maxCharge",
                 "type": "integer"
               },
@@ -440,7 +394,6 @@
                 "id": "#maxLabeledAa",
                 "minimum": 0,
                 "name": "",
-                "required": false,
                 "title": "maxLabeledAa",
                 "type": "integer"
               },
@@ -449,7 +402,6 @@
                 "id": "#maxMissedCleavages",
                 "minimum": 0,
                 "name": "",
-                "required": false,
                 "title": "maxMissedCleavages",
                 "type": "integer"
               },
@@ -458,7 +410,6 @@
                 "id": "#maxNmods",
                 "minimum": 0,
                 "name": "",
-                "required": false,
                 "title": "maxNmods",
                 "type": "integer"
               },
@@ -466,7 +417,6 @@
                 "description": "",
                 "id": "#maxTime",
                 "name": "",
-                "required": false,
                 "title": "maxTime",
                 "type": "number"
               },
@@ -475,7 +425,6 @@
                 "id": "#minPeakLen",
                 "minimum": 0,
                 "name": "",
-                "required": false,
                 "title": "minPeakLen",
                 "type": "integer"
               },
@@ -483,7 +432,6 @@
                 "description": "",
                 "id": "#minScoreForCalibration",
                 "name": "",
-                "required": false,
                 "title": "minScoreForCalibration",
                 "type": "integer"
               },
@@ -491,7 +439,6 @@
                 "description": "",
                 "id": "#minTime",
                 "name": "",
-                "required": false,
                 "title": "minTime",
                 "type": "number"
               },
@@ -500,7 +447,6 @@
                 "id": "#msInstrument",
                 "minimum": 0,
                 "name": "",
-                "required": false,
                 "title": "msInstrument",
                 "type": "integer"
               },
@@ -509,7 +455,6 @@
                 "id": "#multiplicity",
                 "minimum": 0,
                 "name": "",
-                "required": false,
                 "title": "multiplicity",
                 "type": "integer"
               },
@@ -517,7 +462,6 @@
                 "description": "",
                 "id": "#recalibrationInPpm",
                 "name": "",
-                "required": false,
                 "title": "recalibrationInPpm",
                 "type": "boolean"
               },
@@ -525,7 +469,6 @@
                 "description": "",
                 "id": "#searchTolInPpm",
                 "name": "",
-                "required": false,
                 "title": "searchTolInPpm",
                 "type": "boolean"
               },
@@ -533,7 +476,6 @@
                 "description": "",
                 "id": "#slicePeaks",
                 "name": "",
-                "required": false,
                 "title": "slicePeaks",
                 "type": "boolean"
               },
@@ -541,7 +483,6 @@
                 "description": "",
                 "id": "#theorIsotopeCorrelation",
                 "name": "",
-                "required": false,
                 "title": "theorIsotopeCorrelation",
                 "type": "number"
               },
@@ -549,7 +490,6 @@
                 "description": "",
                 "id": "#useEnzymeFirstSearch",
                 "name": "",
-                "required": false,
                 "title": "useEnzymeFirstSearch",
                 "type": "boolean"
               },
@@ -557,7 +497,6 @@
                 "description": "",
                 "id": "#useMs1Centroids",
                 "name": "",
-                "required": false,
                 "title": "useMs1Centroids",
                 "type": "boolean"
               },
@@ -565,7 +504,6 @@
                 "description": "",
                 "id": "#useMs2Centroids",
                 "name": "",
-                "required": false,
                 "title": "useMs2Centroids",
                 "type": "boolean"
               },
@@ -573,7 +511,6 @@
                 "description": "",
                 "id": "#useNormRatiosForHybridLfq",
                 "name": "",
-                "required": false,
                 "title": "useNormRatiosForHybridLfq",
                 "type": "boolean"
               },
@@ -581,7 +518,6 @@
                 "description": "",
                 "id": "#useVariableModificationsFirstSearch",
                 "name": "",
-                "required": false,
                 "title": "useVariableModificationsFirstSearch",
                 "type": "boolean"
               },
@@ -589,7 +525,6 @@
                 "description": "",
                 "id": "#valleyFactor",
                 "name": "",
-                "required": false,
                 "title": "valleyFactor",
                 "type": "number"
               },
@@ -601,13 +536,11 @@
                   "id": "#0",
                   "minLength": 0,
                   "name": "",
-                  "required": false,
                   "title": "",
                   "type": "string"
                 },
                 "minItems": 0,
                 "name": "",
-                "required": false,
                 "title": "variableModifications",
                 "type": "array",
                 "uniqueItems": false
@@ -623,20 +556,17 @@
                     "id": "#0",
                     "minLength": 0,
                     "name": "",
-                    "required": false,
                     "title": "items",
                     "type": "string"
                   },
                   "minItems": 0,
                   "name": "",
-                  "required": false,
                   "title": "items",
                   "type": "array",
                   "uniqueItems": false
                 },
                 "minItems": 0,
                 "name": "",
-                "required": false,
                 "title": "variableModificationsFirstSearch",
                 "type": "array",
                 "uniqueItems": false
@@ -647,7 +577,7 @@
       }
     },
     "fastaFiles": {
-      "required": true,
+      "required": ["fileNames", "firstSearch"],
       "name": "",
       "title": "fastaFiles",
       "type": "object",
@@ -657,7 +587,6 @@
           "id": "#fastaFiles",
           "minItems": 0,
           "name": "fasta files",
-          "required": true,
           "title": "fastaFiles",
           "type": "array",
           "uniqueItems": false,
@@ -665,28 +594,16 @@
             "description": "",
             "id": "#0",
             "name": "",
-            "properties": {
-              "path": {
-                "description": "",
-                "id": "#path",
-                "minLength": 0,
-                "name": "",
-                "required": false,
-                "title": "path",
-                "type": "string"
-              }
-            },
-            "required": false,
             "title": "items",
-            "type": "object"
+            "type": "string"
           }
         },
         "firstSearch": {
           "id": "#fastaFilesFirstSearch",
           "name": "",
-          "required": false,
           "title": "fastaFilesFirstSearch",
-          "type": "string"
+          "type": "array",
+          "items": {"type": "string"}
         }
       }
     },
@@ -694,7 +611,6 @@
       "description": "global parameters for maxquant run",
       "id": "#globalParams",
       "name": "",
-      "required": false,
       "title": "globalParams",
       "type": "object",
       "properties": {
@@ -702,7 +618,6 @@
           "description": "",
           "id": "#advancedRatios",
           "name": "",
-          "required": false,
           "title": "advancedRatios",
           "type": "boolean"
         },
@@ -710,7 +625,6 @@
           "description": "",
           "id": "#advancedSiteIntensities",
           "name": "",
-          "required": false,
           "title": "advancedSiteIntensities",
           "type": "boolean"
         },
@@ -719,7 +633,6 @@
           "id": "#alignmentTimeWindow",
           "minimum": 0,
           "name": "",
-          "required": false,
           "title": "alignmentTimeWindow",
           "type": "integer"
         },
@@ -727,7 +640,6 @@
           "description": "",
           "id": "#avalon",
           "name": "",
-          "required": false,
           "title": "avalon",
           "type": "boolean"
         },
@@ -735,7 +647,6 @@
           "description": "",
           "id": "#calcPeakProperties",
           "name": "",
-          "required": false,
           "title": "calcPeakProperties",
           "type": "boolean"
         },
@@ -743,7 +654,6 @@
           "description": "",
           "id": "#compositionPrediction",
           "name": "",
-          "required": false,
           "title": "compositionPrediction",
           "type": "boolean"
         },
@@ -757,7 +667,6 @@
           "description": "",
           "id": "#crossLinkerSearch",
           "name": "",
-          "required": false,
           "title": "crossLinkerSearch",
           "type": "boolean"
         },
@@ -765,7 +674,6 @@
           "description": "",
           "id": "#deNovoSequencing",
           "name": "",
-          "required": false,
           "title": "deNovoSequencing",
           "type": "boolean"
         },
@@ -773,7 +681,6 @@
           "description": "",
           "id": "#deNovoVarMods",
           "name": "",
-          "required": false,
           "title": "deNovoVarMods",
           "type": "boolean"
         },
@@ -782,7 +689,6 @@
           "id": "#decoyMode",
           "minLength": 0,
           "name": "",
-          "required": false,
           "title": "decoyMode",
           "type": "string"
         },
@@ -794,7 +700,6 @@
           "id": "#dependentPeptideFdr",
           "minimum": 0,
           "name": "",
-          "required": false,
           "title": "dependentPeptideFdr",
           "type": "number"
         },
@@ -803,7 +708,6 @@
           "id": "#dependentPeptideMassBin",
           "minimum": 0,
           "name": "",
-          "required": false,
           "title": "dependentPeptideMassBin",
           "type": "number"
         },
@@ -811,7 +715,6 @@
           "description": "",
           "id": "#dependentPeptides",
           "name": "",
-          "required": false,
           "title": "dependentPeptides",
           "type": "boolean"
         },
@@ -819,7 +722,6 @@
           "description": "",
           "id": "#equalIl",
           "name": "",
-          "required": false,
           "title": "equalIl",
           "type": "boolean"
         },
@@ -827,7 +729,6 @@
           "description": "",
           "id": "#filterAacounts",
           "name": "",
-          "required": false,
           "title": "filterAacounts",
           "type": "boolean"
         },
@@ -839,13 +740,11 @@
             "id": "#0",
             "minLength": 0,
             "name": "",
-            "required": false,
             "title": "items",
             "type": "string"
           },
           "minItems": 0,
           "name": "",
-          "required": false,
           "title": "fixedModifications",
           "type": "array",
           "uniqueItems": false
@@ -853,7 +752,6 @@
         "fixedSearchFolder": {
           "id": "#fixedSearchFolder",
           "name": "",
-          "required": false,
           "title": "fixedSearchFolder",
           "type": "string"
         },
@@ -861,7 +759,6 @@
           "description": "",
           "id": "#fullMaxMz",
           "name": "",
-          "required": false,
           "title": "fullMaxMz",
           "type": "number"
         },
@@ -869,7 +766,6 @@
           "description": "",
           "id": "#fullMinMz",
           "name": "",
-          "required": false,
           "title": "fullMinMz",
           "type": "number"
         },
@@ -877,7 +773,6 @@
           "description": "",
           "id": "#ibaq",
           "name": "",
-          "required": false,
           "title": "ibaq",
           "type": "boolean"
         },
@@ -885,7 +780,6 @@
           "description": "",
           "id": "#ibaqLogFit",
           "name": "",
-          "required": false,
           "title": "ibaqLogFit",
           "type": "boolean"
         },
@@ -893,7 +787,6 @@
           "description": "",
           "id": "#includeContaminants",
           "name": "",
-          "required": false,
           "title": "includeContaminants",
           "type": "boolean"
         },
@@ -901,7 +794,6 @@
           "description": "",
           "id": "#ionCountIntensities",
           "name": "",
-          "required": false,
           "title": "ionCountIntensities",
           "type": "boolean"
         },
@@ -909,7 +801,6 @@
           "description": "",
           "id": "#lfqRequireMsms",
           "name": "",
-          "required": false,
           "title": "lfqRequireMsms",
           "type": "boolean"
         },
@@ -917,7 +808,6 @@
           "description": "",
           "id": "#lfqStabilizeLargeRatios",
           "name": "",
-          "required": false,
           "title": "lfqStabilizeLargeRatios",
           "type": "boolean"
         },
@@ -931,19 +821,16 @@
               "id": "#0",
               "minLength": 0,
               "name": "",
-              "required": false,
               "title": "items",
               "type": "string"
             },
             "minItems": 0,
             "name": "",
-            "required": false,
             "title": "items",
             "type": "array",
             "uniqueItems": true
           },
           "name": "",
-          "required": false,
           "title": "massDifferenceMods",
           "type": "array"
         },
@@ -951,7 +838,6 @@
           "description": "",
           "id": "#massDifferenceSearch",
           "name": "",
-          "required": false,
           "title": "massDifferenceSearch",
           "type": "boolean"
         },
@@ -959,7 +845,6 @@
           "description": "",
           "id": "#matchBetweenRuns",
           "name": "",
-          "required": false,
           "title": "matchBetweenRuns",
           "type": "boolean"
         },
@@ -967,7 +852,6 @@
           "description": "",
           "id": "#matchBetweenRunsFdr",
           "name": "",
-          "required": false,
           "title": "matchBetweenRunsFdr",
           "type": "boolean"
         },
@@ -975,7 +859,6 @@
           "description": "",
           "id": "#matchUnidentifiedFeatures",
           "name": "",
-          "required": false,
           "title": "matchUnidentifiedFeatures",
           "type": "boolean"
         },
@@ -984,7 +867,6 @@
           "id": "#matchingTimeWindow",
           "minimum": 0,
           "name": "",
-          "required": false,
           "title": "matchingTimeWindow",
           "type": "integer"
         },
@@ -993,7 +875,6 @@
           "id": "#maxPeptideLengthForUnspecificSearch",
           "minimum": 0,
           "name": "",
-          "required": false,
           "title": "maxPeptideLengthForUnspecificSearch",
           "type": "integer"
         },
@@ -1002,7 +883,6 @@
           "id": "#maxPeptideMass",
           "minimum": 0,
           "name": "",
-          "required": false,
           "title": "maxPeptideMass",
           "type": "integer"
         },
@@ -1011,7 +891,6 @@
           "id": "#minDeltaScoreModifiedPeptides",
           "minimum": 0,
           "name": "",
-          "required": false,
           "title": "minDeltaScoreModifiedPeptides",
           "type": "integer"
         },
@@ -1020,7 +899,6 @@
           "id": "#minDeltaScoreUnmodifiedPeptides",
           "minimum": 0,
           "name": "",
-          "required": false,
           "title": "minDeltaScoreUnmodifiedPeptides",
           "type": "integer"
         },
@@ -1029,7 +907,6 @@
           "id": "#minPepLen",
           "minimum": 0,
           "name": "",
-          "required": false,
           "title": "minPepLen",
           "type": "integer"
         },
@@ -1038,7 +915,6 @@
           "id": "#minPeptideLengthForUnspecificSearch",
           "minimum": 0,
           "name": "",
-          "required": false,
           "title": "minPeptideLengthForUnspecificSearch",
           "type": "integer"
         },
@@ -1047,7 +923,6 @@
           "id": "#minPeptides",
           "minimum": 0,
           "name": "",
-          "required": false,
           "title": "minPeptides",
           "type": "integer"
         },
@@ -1056,7 +931,6 @@
           "id": "#minRatioCount",
           "minimum": 0,
           "name": "",
-          "required": false,
           "title": "minRatioCount",
           "type": "integer"
         },
@@ -1065,7 +939,6 @@
           "id": "#minRazorPeptides",
           "minimum": 0,
           "name": "",
-          "required": false,
           "title": "minRazorPeptides",
           "type": "integer"
         },
@@ -1074,7 +947,6 @@
           "id": "#minScoreModifiedPeptides",
           "minimum": 0,
           "name": "",
-          "required": false,
           "title": "minScoreModifiedPeptides",
           "type": "integer"
         },
@@ -1083,7 +955,6 @@
           "id": "#minScoreUnmodifiedPeptides",
           "minimum": 0,
           "name": "",
-          "required": false,
           "title": "minScoreUnmodifiedPeptides",
           "type": "integer"
         },
@@ -1092,7 +963,6 @@
           "id": "#minUniquePeptides",
           "minimum": 0,
           "name": "",
-          "required": false,
           "title": "minUniquePeptides",
           "type": "integer"
         },
@@ -1100,7 +970,6 @@
           "description": "",
           "id": "#multiModificationSearch",
           "name": "",
-          "required": false,
           "title": "multiModificationSearch",
           "type": "boolean"
         },
@@ -1108,7 +977,6 @@
           "description": "number of threads to use for computation",
           "id": "#numThreads",
           "name": "numThreads",
-          "required": false,
           "title": "threads",
           "type": "integer"
         },
@@ -1117,7 +985,6 @@
           "id": "#peptideFdr",
           "minimum": 0,
           "name": "",
-          "required": false,
           "title": "peptideFdr",
           "type": "number"
         },
@@ -1126,7 +993,6 @@
           "id": "#proteinFdr",
           "minimum": 0,
           "name": "",
-          "required": false,
           "title": "proteinFdr",
           "type": "number"
         },
@@ -1135,7 +1001,6 @@
           "id": "#quantMode",
           "minimum": 0,
           "name": "",
-          "required": false,
           "title": "quantMode",
           "type": "integer"
         },
@@ -1143,7 +1008,6 @@
           "description": "",
           "id": "#razorProteinFdr",
           "name": "",
-          "required": false,
           "title": "razorProteinFdr",
           "type": "boolean"
         },
@@ -1151,7 +1015,6 @@
           "description": "",
           "id": "#reQuantify",
           "name": "",
-          "required": false,
           "title": "reQuantify",
           "type": "boolean"
         },
@@ -1160,7 +1023,6 @@
           "id": "#reporterBasePeakRatio",
           "minimum": 0,
           "name": "",
-          "required": false,
           "title": "reporterBasePeakRatio",
           "type": "integer"
         },
@@ -1169,7 +1031,6 @@
           "id": "#reporterFraction",
           "minimum": 0,
           "name": "",
-          "required": false,
           "title": "reporterFraction",
           "type": "integer"
         },
@@ -1178,7 +1039,6 @@
           "id": "#reporterPif",
           "minimum": 0,
           "name": "",
-          "required": false,
           "title": "reporterPif",
           "type": "number"
         },
@@ -1190,7 +1050,6 @@
           },
           "minItems": 0,
           "name": "",
-          "required": false,
           "title": "restrictMods",
           "type": "array",
           "uniqueItems": false
@@ -1199,7 +1058,6 @@
           "description": "",
           "id": "#restrictProteinQuantification",
           "name": "",
-          "required": false,
           "title": "restrictProteinQuantification",
           "type": "boolean"
         },
@@ -1207,7 +1065,6 @@
           "description": "",
           "id": "#rtShift",
           "name": "",
-          "required": false,
           "title": "rtShift",
           "type": "boolean"
         },
@@ -1215,7 +1072,6 @@
           "description": "",
           "id": "#secondPeptide",
           "name": "",
-          "required": false,
           "title": "secondPeptide",
           "type": "boolean"
         },
@@ -1223,7 +1079,6 @@
           "description": "",
           "id": "#separateLfq",
           "name": "",
-          "required": false,
           "title": "separateLfq",
           "type": "boolean"
         },
@@ -1231,7 +1086,6 @@
           "description": "",
           "id": "#showCentroidMassDifferences",
           "name": "",
-          "required": false,
           "title": "showCentroidMassDifferences",
           "type": "boolean"
         },
@@ -1239,7 +1093,6 @@
           "description": "",
           "id": "#showIsotopeMassDifferences",
           "name": "",
-          "required": false,
           "title": "showIsotopeMassDifferences",
           "type": "boolean"
         },
@@ -1248,7 +1101,6 @@
           "id": "#siteFdr",
           "minimum": 0,
           "name": "",
-          "required": false,
           "title": "siteFdr",
           "type": "number"
         },
@@ -1257,7 +1109,6 @@
           "id": "#specialAas",
           "minLength": 0,
           "name": "",
-          "required": false,
           "title": "specialAas",
           "type": "string"
         },
@@ -1265,7 +1116,6 @@
           "description": "",
           "id": "#splitProteinGroupsByTaxonomy",
           "name": "",
-          "required": false,
           "title": "splitProteinGroupsByTaxonomy",
           "type": "boolean"
         },
@@ -1274,7 +1124,6 @@
           "id": "#topxWindow",
           "minimum": 0,
           "name": "",
-          "required": false,
           "title": "topxWindow",
           "type": "integer"
         },
@@ -1282,7 +1131,6 @@
           "description": "",
           "id": "#useCounterparts",
           "name": "",
-          "required": false,
           "title": "useCounterparts",
           "type": "boolean"
         },
@@ -1290,7 +1138,6 @@
           "description": "",
           "id": "#useDeltaScore",
           "name": "",
-          "required": false,
           "title": "useDeltaScore",
           "type": "boolean"
         },
@@ -1298,7 +1145,6 @@
           "description": "",
           "id": "#useNormRatiosForOccupancy",
           "name": "",
-          "required": false,
           "title": "useNormRatiosForOccupancy",
           "type": "boolean"
         },
@@ -1306,7 +1152,6 @@
           "description": "",
           "id": "#verboseColumnHeaders",
           "name": "",
-          "required": false,
           "title": "verboseColumnHeaders",
           "type": "boolean"
         }
@@ -1316,7 +1161,6 @@
       "description": "",
       "id": "#MSMSParams",
       "name": "",
-      "required": false,
       "title": "MSMSParams",
       "type": "object",
       "properties": {
@@ -1327,7 +1171,6 @@
           "description": "",
           "id": "#msmsConnection",
           "name": "",
-          "required": false,
           "title": "msmsConnection",
           "type": "boolean"
         },
@@ -1343,7 +1186,6 @@
                 "description": "",
                 "id": "#DeNovoTolerance",
                 "name": "",
-                "required": false,
                 "title": "DeNovoTolerance",
                 "type": "integer"
               },
@@ -1351,7 +1193,6 @@
                 "description": "",
                 "id": "#DeNovoToleranceInPpm",
                 "name": "",
-                "required": false,
                 "title": "DeNovoToleranceInPpm",
                 "type": "boolean"
               },
@@ -1359,7 +1200,6 @@
                 "description": "",
                 "id": "#Deisotope",
                 "name": "",
-                "required": false,
                 "title": "Deisotope",
                 "type": "boolean"
               },
@@ -1367,7 +1207,6 @@
                 "description": "",
                 "id": "#DeisotopeTolerance",
                 "name": "",
-                "required": false,
                 "title": "DeisotopeTolerance",
                 "type": "integer"
               },
@@ -1375,7 +1214,6 @@
                 "description": "",
                 "id": "#DeisotopeToleranceInPpm",
                 "name": "",
-                "required": false,
                 "title": "DeisotopeToleranceInPpm",
                 "type": "boolean"
               },
@@ -1383,7 +1221,6 @@
                 "description": "",
                 "id": "#DependentLosses",
                 "name": "",
-                "required": false,
                 "title": "DependentLosses",
                 "type": "boolean"
               },
@@ -1391,7 +1228,6 @@
                 "description": "",
                 "id": "#HigherCharges",
                 "name": "",
-                "required": false,
                 "title": "HigherCharges",
                 "type": "number"
               },
@@ -1399,7 +1235,6 @@
                 "description": "",
                 "id": "#IncludeAmmonia",
                 "name": "",
-                "required": false,
                 "title": "IncludeAmmonia",
                 "type": "boolean"
               },
@@ -1407,7 +1242,6 @@
                 "description": "",
                 "id": "#IncludeWater",
                 "name": "",
-                "required": false,
                 "title": "IncludeWater",
                 "type": "number"
               },
@@ -1415,7 +1249,6 @@
                 "description": "",
                 "id": "#MatchTolerance",
                 "name": "",
-                "required": false,
                 "title": "MatchTolerance",
                 "type": "number"
               },
@@ -1423,7 +1256,6 @@
                 "description": "",
                 "id": "#MatchToleranceInPpm",
                 "name": "",
-                "required": false,
                 "title": "MatchToleranceInPpm",
                 "type": "boolean"
               },
@@ -1432,7 +1264,6 @@
                 "id": "#Name",
                 "minLength": 0,
                 "name": "",
-                "required": false,
                 "title": "Name",
                 "type": "string"
               },
@@ -1440,7 +1271,6 @@
                 "description": "",
                 "id": "#Recalibration",
                 "name": "",
-                "required": false,
                 "title": "Recalibration",
                 "type": "boolean"
               },
@@ -1449,18 +1279,15 @@
                 "id": "#Topx",
                 "minimum": 0,
                 "name": "",
-                "required": false,
                 "title": "Topx",
                 "type": "integer"
               }
             },
-            "required": false,
             "title": "items",
             "type": "object"
           },
           "minItems": 0,
           "name": "MSMS Array",
-          "required": false,
           "title": "msmsParamsArray",
           "type": "array",
           "uniqueItems": false
@@ -1470,7 +1297,6 @@
           "id": "#numberOfCandidatesMsms",
           "minimum": 0,
           "name": "",
-          "required": false,
           "title": "numberOfCandidatesMsms",
           "type": "integer"
         },
@@ -1479,7 +1305,6 @@
           "id": "#numberOfCandidatesMultiplexedMsms",
           "minimum": 0,
           "name": "",
-          "required": false,
           "title": "numberOfCandidatesMultiplexedMsms",
           "type": "integer"
         }
@@ -1495,7 +1320,6 @@
           "id": "#aifCorrelation",
           "minimum": 0,
           "name": "",
-          "required": false,
           "title": "aifCorrelation",
           "type": "number"
         },
@@ -1504,7 +1328,6 @@
           "id": "#aifCorrelationFirstPass",
           "minimum": 0,
           "name": "",
-          "required": false,
           "title": "aifCorrelationFirstPass",
           "type": "number"
         },
@@ -1513,7 +1336,6 @@
           "id": "#aifIsoWeight",
           "minimum": 0,
           "name": "",
-          "required": false,
           "title": "aifIsoWeight",
           "type": "integer"
         },
@@ -1521,7 +1343,6 @@
           "description": "",
           "id": "#aifIterative",
           "name": "",
-          "required": false,
           "title": "aifIterative",
           "type": "boolean"
         },
@@ -1530,7 +1351,6 @@
           "id": "#aifMinMass",
           "minimum": 0,
           "name": "",
-          "required": false,
           "title": "aifMinMass",
           "type": "integer"
         },
@@ -1539,7 +1359,6 @@
           "id": "#aifMsmsTol",
           "minimum": 0,
           "name": "",
-          "required": false,
           "title": "aifMsmsTol",
           "type": "integer"
         },
@@ -1547,7 +1366,6 @@
           "description": "",
           "id": "#aifSecondPass",
           "name": "",
-          "required": false,
           "title": "aifSecondPass",
           "type": "boolean"
         },
@@ -1556,7 +1374,6 @@
           "id": "#aifSilWeight",
           "minimum": 0,
           "name": "",
-          "required": false,
           "title": "aifSilWeight",
           "type": "integer"
         },
@@ -1565,7 +1382,6 @@
           "id": "#aifThresholdFdr",
           "minimum": 0,
           "name": "",
-          "required": false,
           "title": "aifThresholdFdr",
           "type": "number"
         },
@@ -1574,47 +1390,40 @@
           "id": "#aifTopx",
           "minimum": 0,
           "name": "",
-          "required": false,
           "title": "aifTopx",
           "type": "integer"
         },
         "writeAllPeptidesTable": {
           "id": "#writeAllPeptidesTable",
           "name": "writeAllPeptidesTable",
-          "required": false,
           "title": "writeAllPeptidesTable",
           "type": "boolean"
         },
         "writeMs3ScansTable": {
           "id": "#writeMs3ScansTable",
           "name": "writeMs3ScansTable",
-          "required": false,
           "title": "writeMs3ScansTable",
           "type": "boolean"
         },
         "writeMsScansTable": {
           "id": "#writeMsScansTable",
           "name": "writeMsScansTable",
-          "required": false,
           "title": "writeMsScansTable",
           "type": "boolean"
         },
         "writeMsmsScansTable": {
           "id": "#writeMsmsScansTable",
           "name": "writeMsmsScansTable",
-          "required": false,
           "title": "writeMsmsScansTable",
           "type": "boolean"
         },
         "writeMzRangeTable": {
           "id": "#writeMzRangeTable",
           "name": "writeMzRangeTable",
-          "required": false,
           "title": "writeMzRangeTable",
           "type": "boolean"
         }
       },
-      "required": false,
       "title": "topLevelParams",
       "type": "object"
     }
