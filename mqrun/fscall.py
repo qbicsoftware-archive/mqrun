@@ -21,7 +21,7 @@ except:
 
 def listen(listendir, outdir, maxqueue=0, task_re=None, interval=2):
     """ Return a generator of new tasks in listendir """
-    listendir = Path(listendir).resolve()
+    listendir = Path(listendir)
     if not listendir.is_dir():
         raise ValueError("Can only listen in a directory")
     while True:
@@ -214,9 +214,7 @@ def check_checksum(logger, file):
 
 def basic_file_check(log, file, basedir):
     """ Test if file is below basedir and can be accessed. """
-    try:
-        file = file.resolve()
-    except OSError:
+    if not file.exists():
         log.warn("Invalid input file " + str(file), exc_info=True)
         return False
     if not file.parent == basedir:
@@ -259,12 +257,12 @@ class FSFuture:
     """
     def __init__(self, serverdir, infiles, beat_timeout=None, timeout=None):
         try:
-            self._serverdir = Path(serverdir).resolve()
+            self._serverdir = Path(serverdir)
         except OSError:
             raise ValueError("invalid serverdir: " + str(serverdir))
 
         try:
-            self._orig_infiles = [Path(file).resolve() for file in infiles]
+            self._orig_infiles = [Path(file) for file in infiles]
         except OSError:
             raise ValueError("invalid input file")
 

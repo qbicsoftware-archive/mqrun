@@ -82,7 +82,7 @@ def parse_args():
     args = parser.parse_args()
 
     try:
-        args.mqpath = args.mqpath.resolve()
+        args.mqpath = args.mqpath
     except (OSError, RuntimeError):
         print("Invalid mqpath: " + str(args.mqpath))
         sys.exit(1)
@@ -90,11 +90,11 @@ def parse_args():
         print("Not a file: {}".format(args.mqpath), file=sys.stderr)
         sys.exit(1)
 
-    try:
-        args.listendir = args.listendir.resolve()
-    except (OSError, RuntimeError):
-        print("Invalid listendir: " + str(args.listendir))
-        sys.exit(1)
+    #try:
+    #    args.listendir = args.listendir.resolve()
+    #except (OSError, RuntimeError):
+    #    print("Invalid listendir: " + str(args.listendir))
+    #    sys.exit(1)
     if not args.listendir.is_dir():
         print("Not a directory: {}".format(args.listendir), file=sys.stderr)
         sys.exit(1)
