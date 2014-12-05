@@ -1,0 +1,9 @@
+{
+    "rawFiles": [
+        {"params": {}, "files":[{"name": "name_of_raw_file"}]}
+    ],
+    "fastaFiles": {
+        "fileNames": ["blubb.fasta"],
+        "firstSearch": []
+    }
+}
