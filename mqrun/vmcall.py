@@ -558,7 +558,7 @@ def main():
     params = args['params']
     infiles = args['raw_files'] + [args['params']]
     output = args['output']
-    del args['raw_files'], args['params'], args['output_dir']
+    del args['raw_files'], args['params'], args['output']
     qemu = args['qemu']
     args['vm_logging'] = not args['no_vm_logging']
     del args['no_vm_logging']
@@ -571,15 +571,19 @@ def main():
 
     with open(params) as f:
         if params.endswith('.yaml'):
-            params_dict = yaml.load(params)
+            params_dict = yaml.load(f)
         elif params.endswith('.json'):
-            params_dict = json.load(params)
+            params_dict = json.load(f)
         else:
             raise ValueError('Unknown parameter file format: %s' % params)
 
     validator = jsonschema.Draft4Validator(schema)
+    error = False
     for error in validator.iter_errors(params_dict):
-        print("Error in parameter file at %s: %s", error.message, error.path)
+        print("Error in parameter file at %s: %s" % (error.path, error.message),
+              file=sys.stderr)
+    if error:
+        exit(1)
 
     try:
         mqparams.check_params(params)
