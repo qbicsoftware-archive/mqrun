@@ -17,10 +17,10 @@ import time
 import sys
 import json
 import yaml
+import re
 import jsonschema
 from os.path import join as pjoin
 from . import mqparams
-
 
 logger = logging.getLogger('mqrun-host')
 
@@ -553,6 +553,17 @@ def parse_args():
     return parser.parse_args()
 
 
+def check_output(output):
+    logger.info("Checking output")
+    files = subprocess.check_output(['tar', 'tf', output]).decode().split('\n')
+    for name in files:
+        if re.fullmatch("output_[a-f0-9\-]*/SUCCESS", name):
+            logger.info("Found success marker in output")
+            return 0
+    logger.warn("Could not find success marker. MaxQuant failed.")
+    return 1
+
+
 def main():
     args = vars(parse_args())
     params = args['params']
@@ -598,11 +609,12 @@ def main():
                 res.result()
             finally:
                 vm.copy_out('output', output)
+                return check_output(output)
 
 
 if __name__ == '__main__':
     try:
-        main()
+        exit(main())
     except Exception:
         print("mqrun did not finish successfully. Error was", file=sys.stderr)
         traceback.print_exc(file=sys.stderr)
