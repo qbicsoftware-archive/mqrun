@@ -35,6 +35,8 @@ import argparse
 import sys
 import subprocess
 import tempfile
+import os
+import time
 try:
     import yaml
 except ImportError:
@@ -225,6 +227,12 @@ class MQJob(threading.Thread):
             log.info('Executing MaxQuant with tempdir %s and outdir %s' % (
                 str(tmpdir), str(self.task.outdir)))
 
+            start = time.time()
+
+            # MaxQuant writes status to combined/proc
+            known_status_files = set()
+            proc_dir = os.path.join(str(self.task.outdir), 'combined', 'proc')
+
             mqcall = mqparams.mqrun(
                 self.mqpath,
                 params,
@@ -235,17 +243,29 @@ class MQJob(threading.Thread):
             )
 
             log.info("MaxQuant running with pid " + str(mqcall.pid))
-            try:
-                outs, errs = mqcall.communicate(timeout=self.mq_timeout)
-            except subprocess.TimeoutExpired:
-                log.error("MaxQuant timed out. Timeout was {}s"
-                          .format(self.mq_timeout))
-                mqcall.kill()
-                log.error("MaxQuant process has been killed")
-                outs, errs = mqcall.communicate()
-                log.info("MaxQuant stdout: " + outs.decode())
-                log.info("MaxQuant stderr: " + errs.decode())
-                raise RuntimeError("MaxQuant timeout")
+            while True:
+                try:
+                    outs, errs = mqcall.communicate(timeout=5)
+                    break
+                except subprocess.TimeoutExpired:
+                    if (self.mq_timeout is not None and
+                            time.time() - start > self.mq_timeout):
+                        log.error("MaxQuant timed out. Timeout was {}s"
+                                  .format(self.mq_timeout))
+                        mqcall.kill()
+                        outs, errs = mqcall.communicate()
+                        log.info("MaxQuant stdout: " + outs.decode())
+                        log.info("MaxQuant stderr: " + errs.decode())
+                        raise RuntimeError("MaxQuant timeout")
+                    else:
+                        try:
+                            status_files = set(os.listdir(proc_dir))
+                            new_status_files = known_status_files - status_files
+                            for file in new_status_files:
+                                log.info('New status file: %s', file)
+                            known_status_files = status_files
+                        except Exception:
+                            log.exception("Could not read maxquant status:")
             log.info("MaxQuant stdout: " + outs.decode())
             log.info("MaxQuant stderr: " + errs.decode())
             ret = mqcall.returncode

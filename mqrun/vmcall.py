@@ -309,7 +309,7 @@ class VMTask:
                     args = ','.join([args, '='.join([left, right])])
                 else:
                     args = '='.join([left, right])
-            if args != '':
+            if args:
                 cmd.append(args)
 
         cmd = [item.rstrip('_') for item in cmd]
@@ -361,7 +361,7 @@ class VMTask:
         return self
 
 
-def maxquant_vm(qemu, infiles, windows_image, **kwargs):
+def maxquant_vm(qemu, data_dir, infiles, windows_image, **kwargs):
     """ Prepare a virtual machine to run MaxQuant.
 
     Return an VMTask instance.
@@ -370,6 +370,8 @@ def maxquant_vm(qemu, infiles, windows_image, **kwargs):
     ----------
     qemu: str
         Path to qemu binary or name, if it is in PATH
+    data_dir: path to directory
+        Path to the directory that contains the raw and fasta files.
     infiles: list of str
         Paths to input and parameter files
     windows_image: str
