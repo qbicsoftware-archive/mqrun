@@ -377,6 +377,10 @@ def maxquant_vm(qemu, infiles, windows_image, **kwargs):
     windows_image: str
         Path to the windows boot image containing necessary software. This
         is read-only, it will not be changed.
+    input_image: str
+        Path where the input image should be stored
+    output_image: str
+        Path where the output image should be stored
     mqthreads: int, optional
         The number of threads MaxQuant should use.
     sockets: int, optional
@@ -407,6 +411,8 @@ def maxquant_vm(qemu, infiles, windows_image, **kwargs):
         'keep_images': False,
         'vm_logging': True,
         'cache': 'unsafe',
+        'input_image': 'input.img',
+        'output_image': 'output.img',
     }
     args.update(kwargs)
 
@@ -424,14 +430,15 @@ def maxquant_vm(qemu, infiles, windows_image, **kwargs):
             with open(pjoin(task, 'START'), 'w'):
                 pass
 
-            vm.add_diskimg('input', 'input.img', data_path=data_dir,
+            vm.add_diskimg('input', args['input_image'], data_path=data_dir,
                            cache=args['cache'], size=args['input_size'],
                            if_='virtio', aio='native')
         finally:
             shutil.rmtree(data_dir)
 
-        vm.add_diskimg('output', 'output.img', [], size=args['output_size'],
-                       if_='virtio', aio='native', cache=args['cache'])
+        vm.add_diskimg('output', args['output_image'], [],
+                       size=args['output_size'], if_='virtio', aio='native',
+                       cache=args['cache'])
         vm.add_option('enable-kvm')
         vm.add_option('cpu', 'host')
         vm.add_option('m', args['mem'])
@@ -577,6 +584,10 @@ def main():
     del args['no_vm_logging']
     del args['qemu']
 
+    tmpdir = tempfile.mkdtemp()
+    args['input_image'] = os.path.join(tmpdir, "input.img")
+    args['output_image'] = os.path.join(tmpdir, "output.img")
+
     logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
 
     with open(pjoin(os.path.dirname(__file__), 'data', 'mqschema.json')) as f:
@@ -604,16 +615,21 @@ def main():
         print("Invalid parameter file. Error was", file=sys.stderr)
         traceback.print_exc(file=sys.stderr)
         exit(1)
-    with maxquant_vm(qemu, infiles, **args) as vm:
-        with concurrent.futures.ThreadPoolExecutor(1) as ex:
-            res = ex.submit(vm.run)
-            try:
-                res.result()
-            except:
-                logger.exception("An error occured while executing vm:")
-            finally:
-                vm.copy_out('output', output)
-                return check_output(output)
+
+    try:
+        with maxquant_vm(qemu, infiles, **args) as vm:
+            with concurrent.futures.ThreadPoolExecutor(1) as ex:
+                res = ex.submit(vm.run)
+                try:
+                    res.result()
+                except:
+                    logger.exception("An error occured while executing vm:")
+                finally:
+                    vm.copy_out('output', output)
+                    return check_output(output)
+    except:
+        if not args['keep_images']:
+            shutil.rmtree(tmpdir)
 
 
 if __name__ == '__main__':
