@@ -29,7 +29,7 @@
               "id": "rawFile",
               "titile": "raw file",
               "type": "object",
-              "required": ["name"],
+              "required": ["name", "fraction", "experiment"],
               "properties": {
                 "experiment": {
                   "description": "",
