@@ -22,7 +22,7 @@
           "required": ["files", "params"],
           "files": {
             "id": "#files",
-            "minimum": 1,
+            "minItems": 1,
             "title": "files",
             "type": "array",
             "items": {
@@ -62,6 +62,7 @@
             "title": "parameters",
             "description": "parameters specific to this set of raw files",
             "id": "#params",
+            "required": ["defaults"],
             "properties": {
               "additionalVariableModificationProteins": {
                 "description": "",
@@ -613,6 +614,7 @@
       "name": "",
       "title": "globalParams",
       "type": "object",
+      "required": ["defaults"],
       "properties": {
         "advancedRatios": {
           "description": "",
