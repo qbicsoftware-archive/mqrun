@@ -609,6 +609,8 @@ def main():
             res = ex.submit(vm.run)
             try:
                 res.result()
+            except:
+                logger.exception()
             finally:
                 vm.copy_out('output', output)
                 return check_output(output)
