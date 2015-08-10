@@ -1,10 +1,6 @@
 #!/usr/bin/env python
 """
-=======================================
-MaxQuant Server (:mod:`mqrun.mqdaemon`)
-=======================================
-
-
+MaxQuant Server.
 
 Start a daemon that listens for new directories. Each new directory that
 satisfies some conditions will be interpreted as a request to run MaxQuant on
@@ -162,12 +158,13 @@ def parse_param_file(log, param_file):
 
 
 def validate_params(log, params, datafiles):
-    pass
-    #raw_names = [raw['name'] for raw in params['rawFiles']]
+    #raw_names = [raw['name'] for raw in group['files']
+    #             for group in params['rawFiles']]
     #if len(set(raw_names)) != len(raw_names):
-    #    raise ValueError("Invalid params. rawFile names not unique.")
-    #fasta_names = params['fastaFiles']['fileNames']
-    #fasta_names += params['fastaFiles']
+    #    raise ValueError(
+    #        "Invalid parameter file. Names of raw files not unique."
+    #    )
+    pass
 
 
 class MQJob(threading.Thread):
@@ -211,6 +208,7 @@ class MQJob(threading.Thread):
         self.mq_sem = mq_sem
         self.sem_timeout = sem_timeout
         self.mq_timeout = mq_timeout
+        self.mq_timeout = float('inf')
         self.mqpath = mqpath
         self.tmpdir = tmpdir
 
@@ -265,7 +263,7 @@ class MQJob(threading.Thread):
                                 log.info('New status file: %s', file)
                             known_status_files = status_files
                         except Exception:
-                            log.exception("Could not read maxquant status:")
+                            log.warn("Could not read maxquant status.")
             log.info("MaxQuant stdout: " + outs.decode())
             log.info("MaxQuant stderr: " + errs.decode())
             ret = mqcall.returncode
@@ -403,20 +401,22 @@ def main():
     logging.info('output dir is ' + str(args.outdir))
     logging.info('maxtasks is ' + str(args.maxtasks))
 
-    daemon = MQDaemon(
-        logging,
-        args.listendir,
-        args.mqpath,
-        timeout=args.timeout,
-        num_workers=args.num_workers,
-        outdir=args.outdir,
-        tmpdir=args.tmpdir,
-    )
-    print("Listening in dir " + str(args.listendir))
-    logging.info('start to listen in directory ' + str(args.listendir))
+    try:
+        daemon = MQDaemon(
+            logging,
+            args.listendir,
+            args.mqpath,
+            timeout=args.timeout,
+            num_workers=args.num_workers,
+            outdir=args.outdir,
+            tmpdir=args.tmpdir,
+        )
+        print("Listening in dir " + str(args.listendir))
+        logging.info('start to listen in directory ' + str(args.listendir))
 
-    daemon.serve(args.maxtasks)
-
+        daemon.serve(args.maxtasks)
+    except:
+        logging.exception("Unexpected exception:")
 
 if __name__ == '__main__':
     main()

@@ -340,6 +340,8 @@ class VMTask:
         if err:
             print(err)
 
+        logger.info("vm stopped with exit code %s", retcode)
+
         if retcode:
             raise ValueError("qemu returned error code %s" % retcode)
 
@@ -608,7 +610,7 @@ def main():
             try:
                 res.result()
             except:
-                logger.exception()
+                logger.exception("An error occured while executing vm:")
             finally:
                 vm.copy_out('output', output)
                 return check_output(output)
