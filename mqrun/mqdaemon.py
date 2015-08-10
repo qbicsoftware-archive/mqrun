@@ -258,7 +258,7 @@ class MQJob(threading.Thread):
                     else:
                         try:
                             status_files = set(os.listdir(proc_dir))
-                            new_status_files = known_status_files - status_files
+                            new_status_files = status_files - known_status_files
                             for file in new_status_files:
                                 log.info('New status file: %s', file)
                             known_status_files = status_files
