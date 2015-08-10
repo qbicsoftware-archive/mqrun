@@ -1,7 +1,5 @@
 """
-==========================================
-Convert parameters (:mod:`mqrun.mqparams`)
-==========================================
+Convert parameters between json to maxquant xml.
 
 .. currentmodule:: mqrun.mqparams
 
@@ -39,10 +37,12 @@ Example data::
                     {
                         "name": "input1",
                         "fraction": 1,
+                        "experiment": "exp1",
                     },
                     {
                         "name": "input2",
                         "fraction": 2,
+                        "experiment": "exp2"
                     },
                 ],
                 "params": {
@@ -57,6 +57,7 @@ Example data::
                     {
                         "name": "input2",
                         "fraction": 3,
+                        "experiment": "exp3"
                     }
                 ],
                 "params": {
@@ -65,7 +66,7 @@ Example data::
             }
         "fastaFiles": {
             "fileNames": ["fasta1"],
-            "firstSearch": ["fasta1"],
+            "firstSearch": [],
         }
         "globalParams": {
             "defaults": "default",
