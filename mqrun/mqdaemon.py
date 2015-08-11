@@ -313,6 +313,7 @@ class MQJob(threading.Thread):
         try:
             self.task.status('RUNNING')
             self._run_maxquant(params, datafiles)
+            self.task.success()
         except Exception as e:
             log.exception("Error running MaxQuant.")
             self.task.error("Error running MaxQuant.")
@@ -415,8 +416,9 @@ def main():
         logging.info('start to listen in directory ' + str(args.listendir))
 
         daemon.serve(args.maxtasks)
-    except:
+    except BaseException:
         logging.exception("Unexpected exception:")
+        raise
 
 if __name__ == '__main__':
     main()
